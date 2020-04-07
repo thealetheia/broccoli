@@ -52,4 +52,5 @@ func main() {
 	if len(flag.Args()) == 0 {
 		flag.Usage()
 	}
+
 }
