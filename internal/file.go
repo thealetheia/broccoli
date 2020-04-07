@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,12 +15,12 @@ import (
 var rootPath string
 
 func init() {
-	ex, err := os.Executable()
+	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 
-	rootPath = filepath.Dir(ex)
+	rootPath = dir
 }
 
 type File struct {
