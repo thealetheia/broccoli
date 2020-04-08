@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="description" content="Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#00ADD8">
+
+<title>draw - The Go Programming Language</title>
+
+<link href="https://fonts.googleapis.com/css?family=Work+Sans:600|Roboto:400,700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Product+Sans&text=Supported%20by%20Google&display=swap" rel="stylesheet">
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css">
+
+<link rel="search" type="application/opensearchdescription+xml" title="godoc" href="/opensearch.xml" />
+
+<script>window.initFuncs = [];</script>
+
+<script>
+    var _gaq = _gaq || [];
+    _gaq.push(["_setAccount", "UA-11222381-2"]);
+    window.trackPageview = function() {
+        _gaq.push(["_trackPageview", location.pathname+location.hash]);
+    };
+    window.trackPageview();
+    window.trackEvent = function(category, action, opt_label, opt_value, opt_noninteraction) {
+        _gaq.push(["_trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+    };
+</script>
+
+<script src="/lib/godoc/jquery.js" defer></script>
+
+
+<script src="/lib/godoc/playground.js" defer></script>
+
+<script>var goVersion = "go1.14.1";</script>
+<script src="/lib/godoc/godocs.js" defer></script>
+
+<body class="Site">
+<header class="Header js-header">
+    <nav class="Header-nav Header-nav--wide">
+        <a href="/"><img class="Header-logo" src="/lib/godoc/images/go-logo-blue.svg" alt="Go"></a>
+        <button class="Header-menuButton js-headerMenuButton" aria-label="Main menu" aria-expanded="false">
+            <div class="Header-menuButtonInner"></div>
+        </button>
+        <ul class="Header-menu">
+            <li class="Header-menuItem"><a href="/doc/">Documents</a></li>
+            <li class="Header-menuItem"><a href="/pkg/">Packages</a></li>
+            <li class="Header-menuItem"><a href="/project/">The Project</a></li>
+            <li class="Header-menuItem"><a href="/help/">Help</a></li>
+
+            <li class="Header-menuItem"><a href="/blog/">Blog</a></li>
+
+            <li class="Header-menuItem"><a href="https://play.golang.org/">Play</a></li>
+
+
+            <li class="Header-menuItem Header-menuItem--search">
+                <form class="HeaderSearch" role="search" action="/search">
+                    <input class="HeaderSearch-input"
+                           type="search"
+                           name="q"
+                           placeholder="Search"
+                           aria-label="Search"
+                           autocapitalize="off"
+                           autocomplete="off"
+                           autocorrect="off"
+                           spellcheck="false"
+                           required>
+                    <button class="HeaderSearch-submit">
+                        <!-- magnifying glass: --><svg class="HeaderSearch-icon" width="24" height="24" viewBox="0 0 24 24"><title>Search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main id="page" class="Site-content wide">
+    <div class="container">
+
+
+        <h1>
+            Package draw
+            <span class="text-muted"></span>
+        </h1>
+
+
+
+
+
+
+
+        <div id="nav"></div>
+
+
+        <!--
+            Copyright 2009 The Go Authors. All rights reserved.
+            Use of this source code is governed by a BSD-style
+            license that can be found in the LICENSE file.
+        -->
+        <!--
+            Note: Static (i.e., not template-generated) href and id
+            attributes start with "pkg-" to make it impossible for
+            them to conflict with generated attributes (some of which
+            correspond to Go identifiers).
+        -->
+
+
+
+        <div id="short-nav">
+            <dl>
+                <dd><code>import "image/draw"</code></dd>
+            </dl>
+            <dl>
+                <dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+                <dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+
+                <dd><a href="#pkg-examples" class="examplesLink">Examples</a></dd>
+
+
+            </dl>
+        </div>
+        <!-- The package's Name is printed as title by the top-level template -->
+        <div id="pkg-overview" class="toggleVisible">
+            <div class="collapsed">
+                <h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+            </div>
+            <div class="expanded">
+                <h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+                <p>
+                    Package draw provides image composition functions.
+                </p>
+                <p>
+                    See &#34;The Go image/draw package&#34; for an introduction to this package:
+                    <a href="https://golang.org/doc/articles/image_draw.html">https://golang.org/doc/articles/image_draw.html</a>
+                </p>
+
+
+            </div>
+        </div>
+
+        <div id="pkg-index" class="toggleVisible">
+            <div class="collapsed">
+                <h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+            </div>
+            <div class="expanded">
+                <h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+                <!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+                <div id="manual-nav">
+                    <dl>
+
+
+
+
+                        <dd><a href="#Draw">func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)</a></dd>
+
+
+                        <dd><a href="#DrawMask">func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mask image.Image, mp image.Point, op Op)</a></dd>
+
+
+
+                        <dd><a href="#Drawer">type Drawer</a></dd>
+
+
+
+
+                        <dd><a href="#Image">type Image</a></dd>
+
+
+
+
+                        <dd><a href="#Op">type Op</a></dd>
+
+
+
+                        <dd>&nbsp; &nbsp; <a href="#Op.Draw">func (op Op) Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)</a></dd>
+
+
+
+                        <dd><a href="#Quantizer">type Quantizer</a></dd>
+
+
+
+
+                    </dl>
+                </div><!-- #manual-nav -->
+
+
+                <div id="pkg-examples">
+                    <h3>Examples</h3>
+                    <div class="js-expandAll expandAll collapsed">(Expand All)</div>
+                    <dl>
+
+                        <dd><a class="exampleLink" href="#example_Drawer_floydSteinberg">Drawer (FloydSteinberg)</a></dd>
+
+                    </dl>
+                </div>
+
+
+
+                <h3>Package files</h3>
+                <p>
+			<span style="font-size:90%">
+
+				<a href="/src/image/draw/draw.go">draw.go</a>
+
+			</span>
+                </p>
+
+            </div><!-- .expanded -->
+        </div><!-- #pkg-index -->
+
+
+
+
+
+
+        <h2 id="Draw">func <a href="/src/image/draw/draw.go?s=2817:2896#L90">Draw</a>
+            <a class="permalink" href="#Draw">&#xb6;</a>
+
+
+        </h2>
+        <pre>func Draw(dst <a href="#Image">Image</a>, r <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Rectangle">Rectangle</a>, src <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>, sp <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Point">Point</a>, op <a href="#Op">Op</a>)</pre>
+        <p>
+            Draw calls DrawMask with a nil mask.
+        </p>
+
+
+
+
+
+
+        <h2 id="DrawMask">func <a href="/src/image/draw/draw.go?s=3138:3255#L96">DrawMask</a>
+            <a class="permalink" href="#DrawMask">&#xb6;</a>
+
+
+        </h2>
+        <pre>func DrawMask(dst <a href="#Image">Image</a>, r <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Rectangle">Rectangle</a>, src <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>, sp <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Point">Point</a>, mask <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>, mp <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Point">Point</a>, op <a href="#Op">Op</a>)</pre>
+        <p>
+            DrawMask aligns r.Min in dst with sp in src and mp in mask and then replaces the rectangle r
+            in dst with the result of a Porter-Duff composition. A nil mask is treated as opaque.
+        </p>
+
+
+
+
+
+
+
+        <h2 id="Drawer">type <a href="/src/image/draw/draw.go?s=1342:1564#L40">Drawer</a>
+            <a class="permalink" href="#Drawer">&#xb6;</a>
+
+            <span title="Added in Go 1.2">1.2</span>
+        </h2>
+        <p>
+            Drawer contains the Draw method.
+        </p>
+
+        <pre>type Drawer interface {
+    <span class="comment">// Draw aligns r.Min in dst with sp in src and then replaces the</span>
+    <span class="comment">// rectangle r in dst with the result of drawing src on dst.</span>
+    Draw(dst <a href="#Image">Image</a>, r <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Rectangle">Rectangle</a>, src <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>, sp <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Point">Point</a>)
+}</pre>
+
+
+
+
+        <p>
+            FloydSteinberg is a Drawer that is the Src Op with Floyd-Steinberg error
+            diffusion.
+        </p>
+
+        <pre>var <span id="FloydSteinberg">FloydSteinberg</span> <a href="#Drawer">Drawer</a> = floydSteinberg{}</pre>
+
+
+        <div id="example_Drawer_floydSteinberg" class="toggle">
+            <div class="collapsed">
+                <p class="exampleHeading toggleButton">▹ <span class="text">Example (FloydSteinberg)</span></p>
+            </div>
+            <div class="expanded">
+                <p class="exampleHeading toggleButton">▾ <span class="text">Example (FloydSteinberg)</span></p>
+
+
+
+                <div class="play">
+                    <div class="input"><textarea class="code" spellcheck="false">package main
+
+import (
+	&#34;fmt&#34;
+	&#34;image&#34;
+	&#34;image/color&#34;
+	&#34;image/draw&#34;
+	&#34;math&#34;
+)
+
+func main() {
+	const width = 130
+	const height = 50
+
+	im := image.NewGray(image.Rectangle{Max: image.Point{X: width, Y: height}})
+	for x := 0; x &lt; width; x++ {
+		for y := 0; y &lt; height; y++ {
+			dist := math.Sqrt(math.Pow(float64(x-width/2), 2)/3+math.Pow(float64(y-height/2), 2)) / (height / 1.5) * 255
+			var gray uint8
+			if dist &gt; 255 {
+				gray = 255
+			} else {
+				gray = uint8(dist)
+			}
+			im.SetGray(x, y, color.Gray{Y: 255 - gray})
+		}
+	}
+	pi := image.NewPaletted(im.Bounds(), []color.Color{
+		color.Gray{Y: 255},
+		color.Gray{Y: 160},
+		color.Gray{Y: 70},
+		color.Gray{Y: 35},
+		color.Gray{Y: 0},
+	})
+
+	draw.FloydSteinberg.Draw(pi, im.Bounds(), im, image.ZP)
+	shade := []string{&#34; &#34;, &#34;░&#34;, &#34;▒&#34;, &#34;▓&#34;, &#34;█&#34;}
+	for i, p := range pi.Pix {
+		fmt.Print(shade[p])
+		if (i+1)%width == 0 {
+			fmt.Print(&#34;\n&#34;)
+		}
+	}
+}
+</textarea></div>
+                    <div class="output"><pre></pre></div>
+                    <div class="buttons">
+                        <button class="Button Button--primary run" title="Run this code [shift-enter]">Run</button>
+                        <button class="Button fmt" title="Format this code">Format</button>
+
+                        <button class="Button share" title="Share this code">Share</button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+        <h2 id="Image">type <a href="/src/image/draw/draw.go?s=572:639#L11">Image</a>
+            <a class="permalink" href="#Image">&#xb6;</a>
+
+
+        </h2>
+        <p>
+            Image is an image.Image with a Set method to change a single pixel.
+        </p>
+
+        <pre>type Image interface {
+    <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>
+    Set(x, y <a href="/pkg/builtin/#int">int</a>, c <a href="/pkg/image/color/">color</a>.<a href="/pkg/image/color/#Color">Color</a>)
+}</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <h2 id="Op">type <a href="/src/image/draw/draw.go?s=956:967#L24">Op</a>
+            <a class="permalink" href="#Op">&#xb6;</a>
+
+
+        </h2>
+        <p>
+            Op is a Porter-Duff compositing operator.
+        </p>
+
+        <pre>type Op <a href="/pkg/builtin/#int">int</a></pre>
+
+
+
+        <pre>const (
+    <span class="comment">// Over specifies ``(src in mask) over dst&#39;&#39;.</span>
+    <span id="Over">Over</span> <a href="#Op">Op</a> = <a href="/pkg/builtin/#iota">iota</a>
+    <span class="comment">// Src specifies ``src in mask&#39;&#39;.</span>
+    <span id="Src">Src</span>
+)</pre>
+
+
+
+
+
+
+
+
+
+
+        <h3 id="Op.Draw">func (Op) <a href="/src/image/draw/draw.go?s=1169:1249#L35">Draw</a>
+            <a class="permalink" href="#Op.Draw">&#xb6;</a>
+
+            <span title="Added in Go 1.2">1.2</span>
+        </h3>
+        <pre>func (op <a href="#Op">Op</a>) Draw(dst <a href="#Image">Image</a>, r <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Rectangle">Rectangle</a>, src <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>, sp <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Point">Point</a>)</pre>
+        <p>
+            Draw implements the Drawer interface by calling the Draw function with this
+            Op.
+        </p>
+
+
+
+
+
+
+
+        <h2 id="Quantizer">type <a href="/src/image/draw/draw.go?s=687:909#L17">Quantizer</a>
+            <a class="permalink" href="#Quantizer">&#xb6;</a>
+
+            <span title="Added in Go 1.2">1.2</span>
+        </h2>
+        <p>
+            Quantizer produces a palette for an image.
+        </p>
+
+        <pre>type Quantizer interface {
+    <span class="comment">// Quantize appends up to cap(p) - len(p) colors to p and returns the</span>
+    <span class="comment">// updated palette suitable for converting m to a paletted image.</span>
+    Quantize(p <a href="/pkg/image/color/">color</a>.<a href="/pkg/image/color/#Palette">Palette</a>, m <a href="/pkg/image/">image</a>.<a href="/pkg/image/#Image">Image</a>) <a href="/pkg/image/color/">color</a>.<a href="/pkg/image/color/#Palette">Palette</a>
+}</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div><!-- .container -->
+</main><!-- #page -->
+<footer>
+    <div class="Footer Footer--wide">
+        <img class="Footer-gopher" src="/lib/godoc/images/footer-gopher.jpg" alt="The Go Gopher">
+        <ul class="Footer-links">
+            <li class="Footer-link"><a href="/doc/copyright.html">Copyright</a></li>
+            <li class="Footer-link"><a href="/doc/tos.html">Terms of Service</a></li>
+            <li class="Footer-link"><a href="http://www.google.com/intl/en/policies/privacy/">Privacy Policy</a></li>
+            <li class="Footer-link"><a href="http://golang.org/issues/new?title=x/website:" target="_blank" rel="noopener">Report a website issue</a></li>
+        </ul>
+        <a class="Footer-supportedBy" href="https://google.com">Supported by Google</a>
+    </div>
+</footer>
+
+<script>
+    (function() {
+        var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+        ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+        var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+    })();
+</script>
+
+
