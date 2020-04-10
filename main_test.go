@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -30,9 +29,7 @@ func TestBroccoli(t *testing.T) {
 		return nil
 	})
 
-	t.Logf("packing %d files", len(files))
-
-	bytes, err := br.Pack(files, 6)
+	bytes, err := br.Pack(files, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,8 +38,6 @@ func TestBroccoli(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	fmt.Println(br, err)
 
 	br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
 		virtualPaths = append(virtualPaths, path)

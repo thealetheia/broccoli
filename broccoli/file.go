@@ -49,11 +49,16 @@ func NewFile(filepath string) (*File, error) {
 
 	relPath := strings.TrimPrefix(filepath, rootPath)
 
+	var size int64
+	if fileInfo.IsDir() {
+		size = -fileInfo.Size()
+	}
+
 	return &File{
 		Data:  data,
 		Fpath: relPath,
 		Fname: fileInfo.Name(),
-		Fsize: fileInfo.Size(),
+		Fsize: size,
 		Ftime: fileInfo.ModTime().Unix(),
 	}, nil
 }
@@ -150,6 +155,11 @@ func (f *File) decompress(data []byte) error {
 	err = decoder.Decode(f)
 	if err != nil {
 		return err
+	}
+
+	if f.Fsize < 0 {
+		f.Fsize = -f.Fsize
+		f.Data = nil
 	}
 
 	return nil

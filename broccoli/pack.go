@@ -2,8 +2,7 @@ package broccoli
 
 import (
 	"bytes"
-	"encoding/binary"
-	"fmt"
+	"encoding/gob"
 	"sort"
 
 	"github.com/andybalholm/brotli"
@@ -17,29 +16,20 @@ func Pack(files []*File, quality int) ([]byte, error) {
 		return files[i].Fpath < files[j].Fpath
 	})
 
+	for _, file := range files {
+		data, err := file.compress(quality)
+		if err != nil {
+			return nil, err
+		}
+
+		file.Data = data
+	}
+
 	var b bytes.Buffer
 	w := brotli.NewWriterLevel(&b, packingQuality)
 
-	err := binary.Write(w, binary.LittleEndian, uint32(len(files)))
-	if err != nil {
+	if err := gob.NewEncoder(w).Encode(files); err != nil {
 		return nil, err
-	}
-
-	for _, file := range files {
-		compressed, err := file.compress(quality)
-		if err != nil {
-			return nil, errors.Wrap(err, "could not compress "+file.Fpath)
-		}
-
-		err = binary.Write(w, binary.LittleEndian, uint64(len(compressed)))
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = w.Write(compressed)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if err := w.Close(); err != nil {
@@ -50,43 +40,25 @@ func Pack(files []*File, quality int) ([]byte, error) {
 }
 
 func New(bundle []byte) (*Broccoli, error) {
-	r := brotli.NewReader(bytes.NewReader(bundle))
+	var files []*File
 
-	var n uint32
-	err := binary.Read(r, binary.LittleEndian, &n)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read number of files")
+	r := brotli.NewReader(bytes.NewReader(bundle))
+	if err := gob.NewDecoder(r).Decode(&files); err != nil {
+		return nil, err
 	}
 
 	br := &Broccoli{
+		filePaths: make([]string, 0, len(files)),
 		files:     map[string]*File{},
-		filePaths: make([]string, 0, n),
 	}
 
-	for i := 0; i < int(n); i++ {
-		var m uint64
-		err = binary.Read(r, binary.LittleEndian, &m)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to read length of file %d", i)
+	for _, file := range files {
+		if err := file.decompress(file.Data); err != nil {
+			return nil, errors.Wrap(err, "could not decompress file")
 		}
 
-		b := make([]byte, m)
-		if k, err := r.Read(b); err != nil {
-			return nil, errors.Wrapf(err, "failed to read file %d", i)
-		} else {
-			if m != uint64(k) {
-				return nil,
-					fmt.Errorf("failed to read file %d; expected %d bytes, got %d", i, m, k)
-			}
-		}
-
-		f := &File{compressed: true}
-		if err := f.decompress(b); err != nil {
-			return nil, errors.Wrapf(err, "failed to decompress file #%d", i)
-		}
-
-		br.files[f.Fpath] = f
-		br.filePaths = append(br.filePaths, f.Fpath)
+		br.files[file.Fpath] = file
+		br.filePaths = append(br.filePaths, file.Fpath)
 	}
 
 	return br, nil
