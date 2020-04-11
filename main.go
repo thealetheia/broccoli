@@ -10,13 +10,14 @@ import (
 )
 
 var (
-	flagInput    = flag.String("i", "public", "")
+	flagInput    = flag.String("src", "public", "")
 	flagOutput   = flag.String("o", "", "")
 	flagVariable = flag.String("var", "br", "")
-	flagInclude  = flag.String("include", "*", "")
-	flagExclude  = flag.String("exclude", "!", "")
+	flagInclude  = flag.String("include", "", "")
+	flagExclude  = flag.String("exclude", "", "")
 	flagQuality  = flag.Int("quality", 11, "")
-	flagVerbose  = flag.Bool("v", false, "")
+
+	verbose = flag.Bool("v", false, "")
 )
 
 const (
@@ -28,7 +29,7 @@ const help = `Usage: broccoli [options]
 Broccoli uses brotli compression to embed a virtual file system in Go executables.
 
 Options:
-	-i folder[,file,file2]
+	-src folder[,file,file2]
 		The input files and directories, "public" by default.
 	-o
 		Name of the generated file, follows input by default.
@@ -36,16 +37,16 @@ Options:
 		Name of the exposed variable, "br" by default.
 	-include *.html,*.css
 		Wildcard for the files to include, no default.
-	-exclude *.wasm
-		Wildcard for the files to exclude, no default.
+	-include *.wasm
+		Wildcard for the files to include, no default.
 	-quality [level]
 		Brotli compression level (0-11), the highest by default.
 
 Generate a broccoli.gen.go file with the variable broccoli:
-	//go:generate broccoli -i assets -o broccoli -var broccoli
+	//go:generate broccoli -src assets -o broccoli -var broccoli
 
-Generate a regular public.gen.go file, but exclude all *.wasm files:
-	//go:generate broccoli -i public -exclude *.wasm`
+Generate a regular public.gen.go file, but include all *.wasm files:
+	//go:generate broccoli -src public -include="*.wasm"`
 
 var goIdentifier = regexp.MustCompile(`^\p{L}[\p{L}0-9_]*$`)
 
@@ -81,16 +82,24 @@ func main() {
 		log.Fatalln(variable, "is not a valid Go identifier")
 	}
 
+	includeGlob := *flagInclude
+	excludeGlob := *flagExclude
+	if includeGlob != "" && excludeGlob != "" {
+		log.Fatal("mutually exclusive options -include and -include found")
+	}
+
 	quality := *flagQuality
 	if quality < 1 || quality > 11 {
 		log.Fatalf("unsupported compression level %d (1-11)\n", quality)
 	}
 
 	g := Generator{
-		inputFiles: inputs,
-		outputFile: output,
-		outputVar:  variable,
-		quality:    quality,
+		inputFiles:  inputs,
+		outputFile:  output,
+		outputVar:   variable,
+		includeGlob: includeGlob,
+		excludeGlob: excludeGlob,
+		quality:     quality,
 	}
 
 	g.parsePackage()

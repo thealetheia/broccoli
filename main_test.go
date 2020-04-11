@@ -48,5 +48,5 @@ func TestBroccoli(t *testing.T) {
 		t.Fatal()
 	}
 
-	fmt.Printf("compression factor %.2fx\n", totalSize/float64(len(bytes)))
+	fmt.Printf("testdata: compression factor %.2fx\n", totalSize/float64(len(bytes)))
 }

@@ -34,8 +34,10 @@ package %s
 
 import "aletheia.icu/broccoli/fs"
 
+var %s *fs.Broccoli
+
 func init() {
-	%s := fs.New([]byte("%s"))
+	%s = fs.New([]byte("%s"))
 }
 `
 
@@ -43,7 +45,16 @@ func (g *Generator) generate() {
 	var (
 		files []*fs.File
 		state = map[string]bool{}
+
+		total int64 = 0
 	)
+
+	var card wildcard
+	if g.includeGlob != "" {
+		card = wildcardFrom(true, g.includeGlob)
+	} else if g.excludeGlob != "" {
+		card = wildcardFrom(false, g.excludeGlob)
+	}
 
 	for _, input := range g.inputFiles {
 		info, err := os.Stat(input)
@@ -53,11 +64,19 @@ func (g *Generator) generate() {
 
 		var f *fs.File
 		if info.IsDir() {
-			err = filepath.Walk(input, func(path string, _ os.FileInfo, _ error) error {
+			err = filepath.Walk(input, func(path string, info os.FileInfo, _ error) error {
+				if !card.test(info) {
+					if *verbose {
+						log.Println("ignoring", path)
+					}
+					return nil
+				}
+
 				f, err := fs.NewFile(path)
 				if err != nil {
 					return err
 				}
+				total += f.Fsize
 
 				if _, ok := state[path]; ok {
 					log.Fatalf("duplicate path in ithe input: %s\n", path)
@@ -68,6 +87,9 @@ func (g *Generator) generate() {
 			})
 		} else {
 			f, err = fs.NewFile(input)
+			if err == nil {
+				total += f.Fsize
+			}
 
 			if _, ok := state[input]; ok {
 				log.Fatalf("duplicate path in the input: %s\n", input)
@@ -81,18 +103,58 @@ func (g *Generator) generate() {
 		}
 	}
 
+	if *verbose {
+		log.Printf("encoding %d bytes total\n", total)
+	}
+
 	payload, err := fs.Pack(files, g.quality)
 	if err != nil {
 		log.Fatal("could not compress the input:", err)
 	}
 
+	if *verbose {
+		log.Printf("encoding %d bytes total\n", len(payload))
+	}
+
 	code := fmt.Sprintf(template,
-		time.Now(), g.pkg.name, g.outputVar, payload)
+		time.Now(), g.pkg.name, g.outputVar, g.outputVar, payload)
 
 	err = ioutil.WriteFile(g.outputFile, []byte(code), 0644)
 	if err != nil {
 		log.Fatalf("could not write to %s: %v\n", g.outputFile, err)
 	}
+}
+
+type wildcard struct {
+	include  bool
+	patterns []string
+}
+
+func (w wildcard) test(info os.FileInfo) bool {
+	pass := true
+
+	for _, pattern := range w.patterns {
+		match, err := filepath.Match(pattern, info.Name())
+		if err != nil {
+			log.Fatal("invalid wildcard:", pattern)
+		}
+
+		if match {
+			pass = w.include
+			break
+		}
+	}
+
+	return pass
+}
+
+func wildcardFrom(include bool, patterns string) wildcard {
+	w := strings.Split(patterns, ",")
+	for i, v := range w {
+		w[i] = strings.Trim(v, ` "`)
+	}
+
+	return wildcard{include, w}
 }
 
 // Package holds information about a Go package
