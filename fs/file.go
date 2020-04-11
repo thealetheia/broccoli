@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -37,6 +38,11 @@ type File struct {
 
 // NewFile is only supposed to be called from the generated code.
 func NewFile(filepath string) (*File, error) {
+	// NOTE: On Windows, it evidently does happen.
+	if runtime.GOOS == "windows" {
+		filepath = strings.ReplaceAll(filepath, `\`, "/")
+	}
+
 	fileInfo, err := os.Stat(filepath)
 	if err != nil {
 		return nil, err
