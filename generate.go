@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"go/ast"
 	"go/build"
@@ -37,7 +38,7 @@ import "aletheia.icu/broccoli/fs"
 var %s *fs.Broccoli
 
 func init() {
-	%s = fs.New([]byte("%s"))
+	%s = fs.New("%s")
 }
 `
 
@@ -57,6 +58,10 @@ func (g *Generator) generate() {
 	}
 
 	for _, input := range g.inputFiles {
+		if strings.HasPrefix(input, "..") {
+			log.Fatalf("%s: cannot bundle sources from parent directories", input)
+		}
+
 		info, err := os.Stat(input)
 		if err != nil {
 			log.Fatalf("file or directory %s not found\n", input)
@@ -107,15 +112,16 @@ func (g *Generator) generate() {
 		log.Printf("encoding %d bytes total\n", total)
 	}
 
-	payload, err := fs.Pack(files, g.quality)
+	bundle, err := fs.Pack(files, g.quality)
 	if err != nil {
 		log.Fatal("could not compress the input:", err)
 	}
 
 	if *verbose {
-		log.Printf("encoding %d bytes total\n", len(payload))
+		log.Printf("encoding %d bytes total\n", len(bundle))
 	}
 
+	payload := base64.StdEncoding.EncodeToString(bundle)
 	code := fmt.Sprintf(template,
 		time.Now(), g.pkg.name, g.outputVar, g.outputVar, payload)
 

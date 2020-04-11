@@ -37,11 +37,11 @@ func Pack(files []*File, quality int) ([]byte, error) {
 		return nil, err
 	}
 
-	return encode(b.Bytes()), nil
+	return b.Bytes(), nil
 }
 
-func New(payload []byte) *Broccoli {
-	bundle := decode(payload)
+func New(payload string) *Broccoli {
+	bundle, _ := base64.StdEncoding.DecodeString(payload)
 
 	var files []*File
 	r := brotli.NewReader(bytes.NewBuffer(bundle))
@@ -64,13 +64,4 @@ func New(payload []byte) *Broccoli {
 	}
 
 	return br
-}
-
-func encode(b []byte) []byte {
-	return []byte(base64.StdEncoding.EncodeToString(b))
-}
-
-func decode(b []byte) []byte {
-	d, _ := base64.StdEncoding.DecodeString(string(b))
-	return d
 }
