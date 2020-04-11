@@ -1,5 +1,5 @@
-// Package broccoli implements compression and virtual file system access.
-package broccoli
+// Package fs implements virtual file system access for compressed files.
+package fs
 
 import (
 	"os"

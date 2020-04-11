@@ -1,4 +1,5 @@
 # Compiled executables, object files, libs (shared objects)
+broccoli
 *.o
 *.a
 *.so

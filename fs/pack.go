@@ -1,4 +1,4 @@
-package broccoli
+package fs
 
 import (
 	"bytes"
@@ -39,12 +39,11 @@ func Pack(files []*File, quality int) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func New(bundle []byte) (*Broccoli, error) {
+func New(bundle []byte) *Broccoli {
 	var files []*File
-
-	r := brotli.NewReader(bytes.NewReader(bundle))
+	r := brotli.NewReader(bytes.NewBuffer(bundle))
 	if err := gob.NewDecoder(r).Decode(&files); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	br := &Broccoli{
@@ -54,12 +53,12 @@ func New(bundle []byte) (*Broccoli, error) {
 
 	for _, file := range files {
 		if err := file.decompress(file.Data); err != nil {
-			return nil, errors.Wrap(err, "could not decompress file")
+			panic(errors.Wrap(err, "could not decompress file"))
 		}
 
 		br.files[file.Fpath] = file
 		br.filePaths = append(br.filePaths, file.Fpath)
 	}
 
-	return br, nil
+	return br
 }

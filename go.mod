@@ -3,11 +3,8 @@ module broccoli
 go 1.13
 
 require (
-	github.com/andybalholm/brotli v1.0.0
-	github.com/pkg/errors v0.9.1
+	aletheia.icu/broccoli/fs v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.5.1
-
-	aletheia.icu/broccoli/broccoli v0.0.0
 )
 
-replace aletheia.icu/broccoli/broccoli => ./broccoli
+replace aletheia.icu/broccoli/fs => ./fs

@@ -1,25 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	br "aletheia.icu/broccoli/broccoli"
+	fs "aletheia.icu/broccoli/fs"
 )
 
 func TestBroccoli(t *testing.T) {
 	var (
 		realPaths    []string
 		virtualPaths []string
+		totalSize    float64
 
-		files []*br.File
+		files []*fs.File
 	)
 
 	filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
-		f, err := br.NewFile(path)
+		totalSize += float64(info.Size())
+
+		f, err := fs.NewFile(path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -29,17 +33,13 @@ func TestBroccoli(t *testing.T) {
 		return nil
 	})
 
-	bytes, err := br.Pack(files, 11)
+	bytes, err := fs.Pack(files, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	br, err := br.New(bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+	br := fs.New(bytes)
+	_ = br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
 		virtualPaths = append(virtualPaths, path)
 		return nil
 	})
@@ -47,4 +47,6 @@ func TestBroccoli(t *testing.T) {
 	if !assert.Equal(t, realPaths, virtualPaths, "paths asymmetric") {
 		t.Fatal()
 	}
+
+	fmt.Printf("compression factor %.2fx\n", totalSize/float64(len(bytes)))
 }

@@ -1,4 +1,4 @@
-package broccoli
+package fs
 
 import (
 	"bytes"
@@ -49,17 +49,17 @@ func NewFile(filepath string) (*File, error) {
 
 	relPath := strings.TrimPrefix(filepath, rootPath)
 
-	var size int64
+	var time int64
 	if fileInfo.IsDir() {
-		size = -fileInfo.Size()
+		time = -fileInfo.ModTime().Unix()
 	}
 
 	return &File{
 		Data:  data,
 		Fpath: relPath,
 		Fname: fileInfo.Name(),
-		Fsize: size,
-		Ftime: fileInfo.ModTime().Unix(),
+		Fsize: fileInfo.Size(),
+		Ftime: time,
 	}, nil
 }
 
@@ -157,8 +157,8 @@ func (f *File) decompress(data []byte) error {
 		return err
 	}
 
-	if f.Fsize < 0 {
-		f.Fsize = -f.Fsize
+	if f.Ftime < 0 {
+		f.Ftime = -f.Ftime
 		f.Data = nil
 	}
 
