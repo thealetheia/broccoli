@@ -85,7 +85,7 @@ func main() {
 	includeGlob := *flagInclude
 	excludeGlob := *flagExclude
 	if includeGlob != "" && excludeGlob != "" {
-		log.Fatal("mutually exclusive options -include and -include found")
+		log.Fatal("mutually exclusive options -include and -exclude found")
 	}
 
 	quality := *flagQuality
