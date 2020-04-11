@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -13,15 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-var rootPath string
+var root string
 
 func init() {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	rootPath = dir
+	root, _ = os.Getwd()
 }
 
 type File struct {
@@ -36,33 +32,34 @@ type File struct {
 	buffer *bytes.Buffer
 }
 
-// NewFile is only supposed to be called from the generated code.
-func NewFile(filepath string) (*File, error) {
+// NewFile is only supposed to be called from package main.
+func NewFile(path string) (*File, error) {
 	// NOTE: On Windows, it evidently does happen.
 	if runtime.GOOS == "windows" {
-		filepath = strings.ReplaceAll(filepath, `\`, "/")
+		path = strings.ReplaceAll(path, `\`, "/")
 	}
 
-	fileInfo, err := os.Stat(filepath)
+	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadFile(filepath)
+	data, err := ioutil.ReadFile(path)
 	if err != nil && !fileInfo.IsDir() {
 		return nil, err
 	}
 
-	relPath := strings.TrimPrefix(filepath, rootPath)
+	path, _ = filepath.Abs(path)
+	path, _ = filepath.Rel(root, path)
 
-	var time int64
+	time := fileInfo.ModTime().Unix()
 	if fileInfo.IsDir() {
-		time = -fileInfo.ModTime().Unix()
+		time = -time
 	}
 
 	return &File{
 		Data:  data,
-		Fpath: relPath,
+		Fpath: path,
 		Fname: fileInfo.Name(),
 		Fsize: fileInfo.Size(),
 		Ftime: time,

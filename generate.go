@@ -35,11 +35,7 @@ package %s
 
 import "aletheia.icu/broccoli/fs"
 
-var %s *fs.Broccoli
-
-func init() {
-	%s = fs.New("%s")
-}
+var %s = fs.New("%s")
 `
 
 func (g *Generator) generate() {
@@ -58,10 +54,6 @@ func (g *Generator) generate() {
 	}
 
 	for _, input := range g.inputFiles {
-		if strings.HasPrefix(input, "..") {
-			log.Fatalf("%s: cannot bundle sources from parent directories", input)
-		}
-
 		info, err := os.Stat(input)
 		if err != nil {
 			log.Fatalf("file or directory %s not found\n", input)
@@ -91,19 +83,20 @@ func (g *Generator) generate() {
 				return nil
 			})
 		} else {
-			f, err = fs.NewFile(input)
-			if err == nil {
-				total += f.Fsize
-			}
-
 			if _, ok := state[input]; ok {
 				log.Fatalf("duplicate path in the input: %s\n", input)
 			}
 			state[input] = true
-			files = append(files, f)
+
+			f, err = fs.NewFile(input)
+			if err == nil {
+				total += f.Fsize
+				files = append(files, f)
+			}
 		}
 
 		if err != nil {
+			log.Println(err)
 			log.Fatalf("cannot open file or directory: %s\n", input)
 		}
 	}
@@ -123,7 +116,8 @@ func (g *Generator) generate() {
 
 	payload := base64.StdEncoding.EncodeToString(bundle)
 	code := fmt.Sprintf(template,
-		time.Now(), g.pkg.name, g.outputVar, g.outputVar, payload)
+		time.Now().Format(time.RFC3339),
+		g.pkg.name, g.outputVar, payload)
 
 	err = ioutil.WriteFile(g.outputFile, []byte(code), 0644)
 	if err != nil {
@@ -184,12 +178,12 @@ func (g *Generator) parsePackage() {
 
 	var astFiles []*ast.File
 	g.pkg = new(Package)
-	fs := token.NewFileSet()
+	set := token.NewFileSet()
 	for _, name := range names {
 		if !strings.HasSuffix(name, ".go") {
 			continue
 		}
-		parsedFile, err := parser.ParseFile(fs, name, nil, parser.ParseComments)
+		parsedFile, err := parser.ParseFile(set, name, nil, parser.ParseComments)
 		if err != nil {
 			log.Fatalf("parsing package: %s: %s\n", name, err)
 		}
@@ -202,10 +196,10 @@ func (g *Generator) parsePackage() {
 	g.pkg.dir = "."
 
 	// Type check the package.
-	g.pkg.check(fs, astFiles)
+	g.pkg.check(set, astFiles)
 }
 
-// check type-checks the package. The package must be OK to proceed.
+// check type-checks the package.
 func (pkg *Package) check(fs *token.FileSet, astFiles []*ast.File) {
 	pkg.defs = make(map[*ast.Ident]types.Object)
 	config := types.Config{Importer: defaultImporter(), FakeImportC: true}
@@ -214,7 +208,8 @@ func (pkg *Package) check(fs *token.FileSet, astFiles []*ast.File) {
 	}
 	typesPkg, err := config.Check(pkg.dir, fs, astFiles, info)
 	if err != nil {
-		log.Fatalf("checking package: %s\n", err)
+		log.Println("checking package:", err)
+		log.Println("proceeding anyway...")
 	}
 
 	pkg.typesPkg = typesPkg
