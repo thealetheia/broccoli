@@ -34,11 +34,6 @@ type File struct {
 
 // NewFile is only supposed to be called from package main.
 func NewFile(path string) (*File, error) {
-	// NOTE: On Windows, it evidently does happen.
-	if runtime.GOOS == "windows" {
-		path = strings.ReplaceAll(path, `\`, "/")
-	}
-
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -51,6 +46,11 @@ func NewFile(path string) (*File, error) {
 
 	path, _ = filepath.Abs(path)
 	path, _ = filepath.Rel(root, path)
+
+	// NOTE: On Windows, it evidently does happen.
+	if runtime.GOOS == "windows" {
+		path = strings.ReplaceAll(path, `\`, "/")
+	}
 
 	time := fileInfo.ModTime().Unix()
 	if fileInfo.IsDir() {
