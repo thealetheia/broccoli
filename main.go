@@ -67,8 +67,9 @@ func main() {
 	}
 
 	flag.Parse()
-	if len(os.Args) == 1 {
+	if len(os.Args) <= 1 {
 		flag.Usage()
+		return
 	}
 
 	var inputs []string

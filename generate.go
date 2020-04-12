@@ -18,6 +18,8 @@ import (
 	"aletheia.icu/broccoli/fs"
 )
 
+// Generator collects the necessary info about the package and
+// bundles the provided assets according to provided flags.
 type Generator struct {
 	pkg *Package
 
@@ -42,7 +44,7 @@ func (g *Generator) generate() ([]byte, error) {
 		cards []wildcard
 		state = map[string]bool{}
 
-		total int64 = 0
+		total int64
 	)
 
 	if g.includeGlob != "" {
