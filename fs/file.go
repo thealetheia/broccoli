@@ -152,5 +152,6 @@ func (f *File) decompress(data []byte) error {
 	}
 
 	f.Data = b
+	f.compressed = false
 	return nil
 }
