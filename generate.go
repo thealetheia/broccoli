@@ -8,12 +8,10 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/sabhiram/go-gitignore"
 
@@ -24,8 +22,6 @@ type Generator struct {
 	pkg *Package
 
 	inputFiles   []string // list of source dirs
-	outputFile   string   // <input[0]>.gen.go
-	outputVar    string   // embedded variable
 	includeGlob  string   // files to be included
 	excludeGlob  string   // files to be excluded
 	useGitignore bool     // .gitignore files will be parsed
@@ -40,7 +36,7 @@ import "aletheia.icu/broccoli/fs"
 var %s = fs.New([]byte(%q))
 `
 
-func (g *Generator) generate() {
+func (g *Generator) generate() ([]byte, error) {
 	var (
 		files []*fs.File
 		cards []wildcard
@@ -54,14 +50,19 @@ func (g *Generator) generate() {
 	} else if g.excludeGlob != "" {
 		cards = append(cards, wildcardFrom(false, g.excludeGlob))
 	}
+
 	if g.useGitignore {
-		cards = append(cards, g.parseGitignores()...)
+		ignores, err := g.parseGitignores()
+		if err != nil {
+			return nil, fmt.Errorf("cannot open .gitignore: %w", err)
+		}
+		cards = append(cards, ignores...)
 	}
 
 	for _, input := range g.inputFiles {
 		info, err := os.Stat(input)
 		if err != nil {
-			log.Fatalf("file or directory %s not found\n", input)
+			return nil, fmt.Errorf("file or directory %s not found", input)
 		}
 
 		var f *fs.File
@@ -80,18 +81,18 @@ func (g *Generator) generate() {
 				if err != nil {
 					return err
 				}
-				total += f.Fsize
-
 				if _, ok := state[path]; ok {
-					log.Fatalf("duplicate path in ithe input: %s\n", path)
+					return fmt.Errorf("duplicate path in the input: %s", path)
 				}
+
+				total += f.Fsize
 				state[path] = true
 				files = append(files, f)
 				return nil
 			})
 		} else {
 			if _, ok := state[input]; ok {
-				log.Fatalf("duplicate path in the input: %s\n", input)
+				return nil, fmt.Errorf("duplicate path in the input: %s", input)
 			}
 			state[input] = true
 
@@ -103,8 +104,7 @@ func (g *Generator) generate() {
 		}
 
 		if err != nil {
-			log.Println(err)
-			log.Fatalf("cannot open file or directory: %s\n", input)
+			return nil, fmt.Errorf("cannot open file or directory: %w", err)
 		}
 	}
 
@@ -114,21 +114,14 @@ func (g *Generator) generate() {
 
 	bundle, err := fs.Pack(files, g.quality)
 	if err != nil {
-		log.Fatal("could not compress the input:", err)
+		return nil, fmt.Errorf("could not compress the input: %w", err)
 	}
 
 	if *verbose {
 		log.Println("total bytes compressed:", len(bundle))
 	}
 
-	code := fmt.Sprintf(template,
-		time.Now().Format(time.RFC3339),
-		g.pkg.name, g.outputVar, bundle)
-
-	err = ioutil.WriteFile(g.outputFile, []byte(code), 0644)
-	if err != nil {
-		log.Fatalf("could not write to %s: %v\n", g.outputFile, err)
-	}
+	return bundle, nil
 }
 
 type wildcard interface{
@@ -175,8 +168,8 @@ func (w gitignoreWildcard) test(info os.FileInfo) bool {
 	return !w.ign.MatchesPath(info.Name())
 }
 
-func (g *Generator) parseGitignores() (cards []wildcard) {
-	err := filepath.Walk(".", func(path string, info os.FileInfo, _ error) error {
+func (g *Generator) parseGitignores() (cards []wildcard, err error) {
+	err = filepath.Walk(".", func(path string, info os.FileInfo, _ error) error {
 		if !info.IsDir() && info.Name() == ".gitignore" {
 			ign, err := ignore.CompileIgnoreFile(path)
 			if err != nil {
@@ -186,9 +179,6 @@ func (g *Generator) parseGitignores() (cards []wildcard) {
 		}
 		return nil
 	})
-	if err != nil {
-		log.Fatalf("cannot open .gitignore: %v\n", err)
-	}
 	return
 }
 

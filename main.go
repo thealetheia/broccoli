@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var (
@@ -98,8 +100,6 @@ func main() {
 
 	g := Generator{
 		inputFiles:   inputs,
-		outputFile:   output,
-		outputVar:    variable,
 		includeGlob:  includeGlob,
 		excludeGlob:  excludeGlob,
 		useGitignore: *flagGitignore,
@@ -107,5 +107,18 @@ func main() {
 	}
 
 	g.parsePackage()
-	g.generate()
+
+	bundle, err := g.generate()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	code := fmt.Sprintf(template,
+		time.Now().Format(time.RFC3339),
+		g.pkg.name, variable, bundle)
+
+	err = ioutil.WriteFile(output, []byte(code), 0644)
+	if err != nil {
+		log.Fatalf("could not write to %s: %v\n", output, err)
+	}
 }
