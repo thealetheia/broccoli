@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	flagInput    = flag.String("src", "public", "")
-	flagOutput   = flag.String("o", "", "")
-	flagVariable = flag.String("var", "br", "")
-	flagInclude  = flag.String("include", "", "")
-	flagExclude  = flag.String("exclude", "", "")
-	flagQuality  = flag.Int("quality", 11, "")
+	flagInput     = flag.String("src", "public", "")
+	flagOutput    = flag.String("o", "", "")
+	flagVariable  = flag.String("var", "br", "")
+	flagInclude   = flag.String("include", "", "")
+	flagExclude   = flag.String("exclude", "", "")
+	flagGitignore = flag.Bool("gitignore", false, "")
+	flagQuality   = flag.Int("quality", 11, "")
 
 	verbose = flag.Bool("v", false, "")
 )
@@ -39,6 +40,8 @@ Options:
 		Wildcard for the files to include, no default.
 	-include *.wasm
 		Wildcard for the files to include, no default.
+	-gitignore
+		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
 		Brotli compression level (0-11), the highest by default.
 
@@ -94,12 +97,13 @@ func main() {
 	}
 
 	g := Generator{
-		inputFiles:  inputs,
-		outputFile:  output,
-		outputVar:   variable,
-		includeGlob: includeGlob,
-		excludeGlob: excludeGlob,
-		quality:     quality,
+		inputFiles:   inputs,
+		outputFile:   output,
+		outputVar:    variable,
+		includeGlob:  includeGlob,
+		excludeGlob:  excludeGlob,
+		useGitignore: *flagGitignore,
+		quality:      quality,
 	}
 
 	g.parsePackage()
