@@ -38,10 +38,25 @@ import "aletheia.icu/broccoli/fs"
 var %s = fs.New(%t, []byte(%q))
 `
 
+type wildcards []wildcard
+
+func (w wildcards) test(path string, info os.FileInfo) bool {
+	for _, card := range w {
+		if !card.test(info) {
+			if *verbose {
+				log.Println("ignoring", path)
+			}
+			return false
+		}
+	}
+
+	return true
+}
+
 func (g *Generator) generate() ([]byte, error) {
 	var (
 		files []*fs.File
-		cards []wildcard
+		cards wildcards
 		state = map[string]bool{}
 
 		total int64
@@ -68,42 +83,40 @@ func (g *Generator) generate() ([]byte, error) {
 		}
 
 		var f *fs.File
-		if info.IsDir() {
-			err = filepath.Walk(input, func(path string, info os.FileInfo, _ error) error {
-				for _, card := range cards {
-					if !card.test(info) {
-						if *verbose {
-							log.Println("ignoring", path)
-						}
-						return nil
-					}
-				}
-
-				f, err := fs.NewFile(path)
-				if err != nil {
-					return err
-				}
-				if _, ok := state[path]; ok {
-					return fmt.Errorf("duplicate path in the input: %s", path)
-				}
-
-				total += f.Fsize
-				state[path] = true
-				files = append(files, f)
-				return nil
-			})
-		} else {
+		if !info.IsDir() {
 			if _, ok := state[input]; ok {
 				return nil, fmt.Errorf("duplicate path in the input: %s", input)
 			}
 			state[input] = true
 
 			f, err = fs.NewFile(input)
-			if err == nil {
-				total += f.Fsize
-				files = append(files, f)
+			if err != nil {
+				return nil, fmt.Errorf("cannot open file or directory: %w", err)
 			}
+
+			total += f.Fsize
+			files = append(files, f)
+			continue
 		}
+
+		err = filepath.Walk(input, func(path string, info os.FileInfo, _ error) error {
+			if !cards.test(path, info) {
+				return nil
+			}
+
+			f, err := fs.NewFile(path)
+			if err != nil {
+				return err
+			}
+			if _, ok := state[path]; ok {
+				return fmt.Errorf("duplicate path in the input: %s", path)
+			}
+
+			total += f.Fsize
+			state[path] = true
+			files = append(files, f)
+			return nil
+		})
 
 		if err != nil {
 			return nil, fmt.Errorf("cannot open file or directory: %w", err)

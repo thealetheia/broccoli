@@ -9,8 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const packingQuality = 6
-
 // Pack compresses a set of files from disk for bundled use in the generated code.
 //
 // This function is only supposed to be called by broccoli the tool.
@@ -33,7 +31,7 @@ func Pack(files []*File, quality int) ([]byte, error) {
 	}
 
 	var b bytes.Buffer
-	w := brotli.NewWriterLevel(&b, packingQuality)
+	w := brotli.NewWriterLevel(&b, quality)
 	if err := gob.NewEncoder(w).Encode(files); err != nil {
 		return nil, err
 	}
