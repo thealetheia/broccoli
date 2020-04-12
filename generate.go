@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sabhiram/go-gitignore"
+	ignore "github.com/sabhiram/go-gitignore"
 
 	"aletheia.icu/broccoli/fs"
 )
@@ -33,7 +33,7 @@ package %s
 
 import "aletheia.icu/broccoli/fs"
 
-var %s = fs.New([]byte(%q))
+var %s = fs.New(%t, []byte(%q))
 `
 
 func (g *Generator) generate() ([]byte, error) {
@@ -124,7 +124,7 @@ func (g *Generator) generate() ([]byte, error) {
 	return bundle, nil
 }
 
-type wildcard interface{
+type wildcard interface {
 	test(os.FileInfo) bool
 }
 
