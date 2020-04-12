@@ -1,4 +1,4 @@
-module fs
+module aletheia.icu/broccoli/fs
 
 go 1.13
 

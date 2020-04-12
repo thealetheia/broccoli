@@ -1,4 +1,4 @@
-module broccoli
+module aletheia.icu/broccoli
 
 go 1.13
 
