@@ -15,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tilinna/z85"
-
 	"aletheia.icu/broccoli/fs"
 )
 
@@ -36,7 +34,7 @@ package %s
 
 import "aletheia.icu/broccoli/fs"
 
-var %s = fs.New("%s")
+var %s = fs.New([]byte(%q))
 `
 
 func (g *Generator) generate() {
@@ -103,7 +101,7 @@ func (g *Generator) generate() {
 	}
 
 	if *verbose {
-		log.Printf("encoding %d bytes total\n", total)
+		log.Println("total bytes read:", total)
 	}
 
 	bundle, err := fs.Pack(files, g.quality)
@@ -112,25 +110,17 @@ func (g *Generator) generate() {
 	}
 
 	if *verbose {
-		log.Printf("encoding %d bytes total\n", len(bundle))
+		log.Println("total bytes compressed:", len(bundle))
 	}
 
-	//payload := base64.StdEncoding.EncodeToString(bundle)
-	payload := encode(bundle)
 	code := fmt.Sprintf(template,
 		time.Now().Format(time.RFC3339),
-		g.pkg.name, g.outputVar, payload)
+		g.pkg.name, g.outputVar, bundle)
 
 	err = ioutil.WriteFile(g.outputFile, []byte(code), 0644)
 	if err != nil {
 		log.Fatalf("could not write to %s: %v\n", g.outputFile, err)
 	}
-}
-
-func encode(b []byte) string {
-	bundle := make([]byte, z85.EncodedLen(len(b)))
-	_, _ = z85.Encode(bundle, b)
-	return string(bundle)
 }
 
 type wildcard struct {

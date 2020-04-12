@@ -1,2 +1,0 @@
-# github.com/tilinna/z85 v1.0.0
-github.com/tilinna/z85

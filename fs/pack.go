@@ -5,8 +5,6 @@ import (
 	"encoding/gob"
 	"sort"
 
-	"github.com/tilinna/z85"
-
 	"github.com/andybalholm/brotli"
 	"github.com/pkg/errors"
 )
@@ -41,11 +39,7 @@ func Pack(files []*File, quality int) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func New(payload string) *Broccoli {
-	bundle := make([]byte, z85.DecodedLen(len(payload)))
-	_, _ = z85.Decode(bundle, []byte(payload))
-	//bundle, _ := base64.StdEncoding.DecodeString(payload)
-
+func New(bundle []byte) *Broccoli {
 	var files []*File
 	r := brotli.NewReader(bytes.NewBuffer(bundle))
 	if err := gob.NewDecoder(r).Decode(&files); err != nil {

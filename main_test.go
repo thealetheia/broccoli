@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -39,7 +38,7 @@ func TestBroccoli(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	br := fs.New(base64.StdEncoding.EncodeToString(bundle))
+	br := fs.New(bundle)
 	_ = br.Walk("./testdata", func(path string, info os.FileInfo, err error) error {
 		virtualPaths = append(virtualPaths, path)
 		return nil
@@ -50,8 +49,4 @@ func TestBroccoli(t *testing.T) {
 	}
 
 	fmt.Printf("testdata: compression factor %.2fx\n", totalSize/float64(len(bundle)))
-}
-
-func TestOnce(t *testing.T) {
-	br.Stat("")
 }
