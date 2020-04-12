@@ -1,0 +1,5 @@
+# keep one specific file
+!youtubescript/googleJS.js
+
+# exclude contents directory
+contents
