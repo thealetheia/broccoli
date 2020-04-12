@@ -38,7 +38,7 @@ func TestBroccoli(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	br := fs.New(bundle)
+	br := fs.New(false, bundle)
 	br.Walk("./testdata", func(path string, _ os.FileInfo, _ error) error {
 		virtualPaths = append(virtualPaths, path)
 		return nil
@@ -55,19 +55,19 @@ func TestGenerate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		br := fs.New(bundle)
+		br := fs.New(false, bundle)
 		br.Walk("testdata", walkFn)
 	}
 
 	generator := func() Generator {
 		return Generator{
-			inputFiles:   []string{"testdata"},
-			quality:      11,
+			inputFiles: []string{"testdata"},
+			quality:    11,
 		}
 	}
 
 	var (
-		realPaths []string
+		realPaths    []string
 		virtualPaths []string
 	)
 

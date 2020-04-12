@@ -17,6 +17,7 @@ var (
 	flagVariable  = flag.String("var", "br", "")
 	flagInclude   = flag.String("include", "", "")
 	flagExclude   = flag.String("exclude", "", "")
+	flagOptional  = flag.Bool("opt", false, "")
 	flagGitignore = flag.Bool("gitignore", false, "")
 	flagQuality   = flag.Int("quality", 11, "")
 
@@ -42,6 +43,9 @@ Options:
 		Wildcard for the files to include, no default.
 	-exclude *.wasm
 		Wildcard for the files to exclude, no default.
+	-opt
+		Optional decompression: if enabled, files will only be decompressed
+		on the first time they are read.
 	-gitignore
 		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
@@ -115,7 +119,7 @@ func main() {
 
 	code := fmt.Sprintf(template,
 		time.Now().Format(time.RFC3339),
-		g.pkg.name, variable, bundle)
+		g.pkg.name, variable, *flagOptional, bundle)
 
 	err = ioutil.WriteFile(output, []byte(code), 0644)
 	if err != nil {

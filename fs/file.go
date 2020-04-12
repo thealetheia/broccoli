@@ -2,7 +2,6 @@ package fs
 
 import (
 	"bytes"
-	"encoding/gob"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -115,11 +114,15 @@ func (f *File) Mode() os.FileMode {
 }
 
 func (f *File) ModTime() time.Time {
-	return time.Unix(f.Ftime, 0)
+	t := f.Ftime
+	if t < 0 {
+		t = -t
+	}
+	return time.Unix(t, 0)
 }
 
 func (f *File) IsDir() bool {
-	return f.Data == nil
+	return f.Ftime < 0
 }
 
 func (f *File) Sys() interface{} {
@@ -127,15 +130,9 @@ func (f *File) Sys() interface{} {
 }
 
 func (f *File) compress(quality int) ([]byte, error) {
-	var gobs bytes.Buffer
-	err := gob.NewEncoder(&gobs).Encode(f)
-	if err != nil {
-		return []byte{}, err
-	}
-
 	var b bytes.Buffer
 	w := brotli.NewWriterLevel(&b, quality)
-	_, err = w.Write(gobs.Bytes())
+	_, err := w.Write(f.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -154,16 +151,7 @@ func (f *File) decompress(data []byte) error {
 		return err
 	}
 
-	decoder := gob.NewDecoder(bytes.NewReader(b))
-	err = decoder.Decode(f)
-	if err != nil {
-		return err
-	}
-
-	if f.Ftime < 0 {
-		f.Ftime = -f.Ftime
-		f.Data = nil
-	}
-
+	f.Data = b
+	f.compressed = false
 	return nil
 }

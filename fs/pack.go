@@ -17,6 +17,10 @@ func Pack(files []*File, quality int) ([]byte, error) {
 	})
 
 	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
 		data, err := file.compress(quality)
 		if err != nil {
 			return nil, err
@@ -27,7 +31,6 @@ func Pack(files []*File, quality int) ([]byte, error) {
 
 	var b bytes.Buffer
 	w := brotli.NewWriterLevel(&b, packingQuality)
-
 	if err := gob.NewEncoder(w).Encode(files); err != nil {
 		return nil, err
 	}
@@ -39,7 +42,7 @@ func Pack(files []*File, quality int) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func New(bundle []byte) *Broccoli {
+func New(opt bool, bundle []byte) *Broccoli {
 	var files []*File
 	r := brotli.NewReader(bytes.NewBuffer(bundle))
 	if err := gob.NewDecoder(r).Decode(&files); err != nil {
@@ -51,13 +54,17 @@ func New(bundle []byte) *Broccoli {
 		files:     map[string]*File{},
 	}
 
-	for _, file := range files {
-		if err := file.decompress(file.Data); err != nil {
-			panic(errors.Wrap(err, "could not decompress file"))
+	for _, f := range files {
+		f.compressed = true
+
+		if !opt {
+			if err := f.decompress(f.Data); err != nil {
+				panic(errors.Wrap(err, "could not decompress"))
+			}
 		}
 
-		br.files[file.Fpath] = file
-		br.filePaths = append(br.filePaths, file.Fpath)
+		br.files[f.Fpath] = f
+		br.filePaths = append(br.filePaths, f.Fpath)
 	}
 
 	return br
