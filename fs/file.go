@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -34,6 +35,7 @@ type File struct {
 	Ftime int64
 
 	buffer *bytes.Buffer
+	br     *Broccoli
 }
 
 // NewFile constructs a new bundled file from the disk.
@@ -101,6 +103,56 @@ func (f *File) Read(b []byte) (int, error) {
 	return f.buffer.Read(b)
 }
 
+var (
+	errBadOffset = errors.New("Seek: bad offset")
+	errBadWhence = errors.New("Seek: bad whence")
+)
+
+// Seek sets the offset for the next Read or Write on file to offset,
+// interpreted according to whence: 0 means relative to the origin of the file,
+// 1 means relative to the current offset, and 2 means relative to the end.
+//
+// It returns the new offset and and error, if any.
+func (f *File) Seek(offset int64, whence int) (int64, error) {
+	if f.buffer == nil {
+		return 0, os.ErrClosed
+	}
+
+	n := int64(len(f.Data))
+
+	switch whence {
+	// io.SeekStart
+	// seek relative to the origin of the file
+	case 0:
+		if offset >= n {
+			return 0, errBadOffset
+		}
+		f.buffer = bytes.NewBuffer(f.Data[offset:])
+		return offset, nil
+	// io.SeekCurrent
+	// seek relative to the current offset
+	case 1:
+		if offset >= int64(f.buffer.Len()) {
+			return 0, errBadOffset
+		}
+		i := n - int64(f.buffer.Len()) + offset
+		f.buffer = bytes.NewBuffer(f.Data[i:])
+		return i, nil
+	// io.SeekEnd
+	// seek relative to the end
+	case 2:
+		if offset >= n {
+			return 0, errBadOffset
+		}
+
+		i := n - offset
+		f.buffer = bytes.NewBuffer(f.Data[i:])
+		return i, nil
+	default:
+		return 0, errBadWhence
+	}
+}
+
 // Close clears the dedicated file buffer.
 func (f *File) Close() error {
 	if f.buffer == nil {
@@ -144,6 +196,46 @@ func (f *File) ModTime() time.Time {
 // IsDir tells whether if the file is a directory.
 func (f *File) IsDir() bool {
 	return f.Ftime < 0
+}
+
+// Readdir reads the contents of the directory associated with file and
+// returns a slice of up to n FileInfo values, as would be returned
+// by Lstat, in directory order. Subsequent calls on the same file will yield
+// further FileInfos.
+//
+// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
+// Readdir returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is io.EOF.
+//
+// If n <= 0, Readdir returns all the FileInfo from the directory in
+// a single slice. In this case, if Readdir succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil error. If it encounters an error before the end of the
+// directory, Readdir returns the FileInfo read until that point
+// and a non-nil error.
+func (f *File) Readdir(count int) ([]os.FileInfo, error) {
+	if !f.IsDir() {
+		return nil, os.ErrInvalid
+	}
+
+	if count < 0 {
+		count = 0
+	}
+
+	files := make([]os.FileInfo, 0, count)
+	for i := sort.SearchStrings(f.br.filePaths, f.Fpath) + 1; ; i++ {
+		g := f.br.files[f.br.filePaths[i]]
+		if !strings.HasPrefix(g.Fpath, f.Fpath) {
+			break
+		}
+
+		files = append(files, g)
+		if count != 0 && len(files) == count {
+			break
+		}
+	}
+
+	return files, nil
 }
 
 // Sys is a mystery and always returns nil.

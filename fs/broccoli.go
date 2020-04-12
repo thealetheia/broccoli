@@ -35,23 +35,23 @@ func (br *Broccoli) Open(filepath string) (*File, error) {
 	return nil, os.ErrNotExist
 }
 
+// Stat returns a FileInfo describing the named file.
+func (br *Broccoli) Stat(path string) (os.FileInfo, error) {
+	path = normalize(path)
+
+	if file, ok := br.files[path]; ok {
+		return file, nil
+	}
+
+	return nil, os.ErrNotExist
+}
+
 // Walk walks the file tree rooted at root, calling walkFn for each file or
 // directory in the tree, including root. All errors that arise visiting files
 // and directories are filtered by walkFn. The files are walked in lexical
 // order, which makes the output deterministic but means that for very
 // large directories Walk can be inefficient.
 // Walk does not follow symbolic links.
-func (br *Broccoli) Stat(path string) (os.FileInfo, error) {
-	path = normalize(path)
-
-	if file, ok := br.files[path]; ok {
-		return file, nil
-	} else {
-		return nil, os.ErrNotExist
-	}
-}
-
-// Stat returns a FileInfo describing the named file.
 func (br *Broccoli) Walk(root string, walkFn filepath.WalkFunc) error {
 	root = normalize(root)
 

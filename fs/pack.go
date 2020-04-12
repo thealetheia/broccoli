@@ -64,6 +64,7 @@ func New(opt bool, bundle []byte) *Broccoli {
 
 	for _, f := range files {
 		f.compressed = true
+		f.br = br
 
 		if !opt {
 			if err := f.decompress(f.Data); err != nil {
