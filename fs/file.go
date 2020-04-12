@@ -38,6 +38,11 @@ type File struct {
 	br     *Broccoli
 }
 
+// Stat returns a FileInfo describing this file.
+func (f *File) Stat() (os.FileInfo, error) {
+	return f.br.Stat(f.Fpath)
+}
+
 // NewFile constructs a new bundled file from the disk.
 //
 // It is only supposed to be called from the broccoli tool.
