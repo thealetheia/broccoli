@@ -38,8 +38,8 @@ Options:
 		Name of the exposed variable, "br" by default.
 	-include *.html,*.css
 		Wildcard for the files to include, no default.
-	-include *.wasm
-		Wildcard for the files to include, no default.
+	-exclude *.wasm
+		Wildcard for the files to exclude, no default.
 	-gitignore
 		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
