@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -120,6 +121,61 @@ func TestGenerate(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+func TestFile(t *testing.T) {
+	_, err := fs.NewFile("bad")
+	assert.Error(t, err)
+
+	g := Generator{
+		inputFiles: []string{"testdata"},
+		quality:    11,
+	}
+
+	bundle, err := g.generate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	br := fs.New(false, bundle)
+
+	f, err := br.Open("testdata/index.html")
+	assert.NoError(t, err)
+	_, ok := f.(*fs.File)
+	assert.True(t, ok)
+
+	info, err := os.Stat("testdata/index.html")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0444), f.(*fs.File).Mode()) // const for files
+	assert.Equal(t, info.ModTime().Truncate(time.Second), f.(*fs.File).ModTime())
+
+	stat, err := f.Stat()
+	assert.NoError(t, err)
+	assert.NotNil(t, stat)
+
+	assert.NoError(t, f.Close())
+	_, err = f.Read(nil)
+	assert.Equal(t, os.ErrClosed, err)
+	_, err = f.Readdir(0)
+	assert.Error(t, os.ErrInvalid, err)
+	assert.Equal(t, os.ErrClosed, f.Close())
+
+	assert.Equal(t, "index.html", f.(*fs.File).Name())
+	assert.Equal(t, info.Size(), f.(*fs.File).Size())
+	assert.False(t, f.(*fs.File).IsDir())
+	assert.Nil(t, f.(*fs.File).Sys())
+
+	assert.NoError(t, f.(*fs.File).Open())
+	_, err = f.Read(make([]byte, 0, 32))
+	assert.NoError(t, err)
+
+	dir, err := br.Open("testdata/html")
+	assert.NoError(t, err)
+
+	info, err = os.Stat("testdata/html")
+	assert.NoError(t, err)
+	assert.Equal(t, os.ModeDir, dir.(*fs.File).Mode())
+	assert.Equal(t, info.ModTime().Truncate(time.Second), dir.(*fs.File).ModTime())
 }
 
 func TestFileReaddir(t *testing.T) {
