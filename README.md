@@ -1,6 +1,6 @@
 Note: this repository is a [mirror](https://vcs.aletheia.icu/lads/broccoli).
 
-# Broccoli
+# 🥦 Broccoli
 > `go get -u aletheia.icu/broccoli`
 
 [![GoDoc](https://godoc.org/aletheia.icu/broccoli/fs?status.svg)](https://godoc.org/aletheia.icu/broccoli/fs)
@@ -59,6 +59,39 @@ Broccoli seems to outperform the existing solutions.
 
 We did [benchmarks](https://vcs.aletheia.icu/lads/broccoli-bench), please feel
 free to review them and correct us whenever our methodology could be flawed.
+
+### Usage
+```
+$ broccoli
+Usage: broccoli [options]
+
+Broccoli uses brotli compression to embed a virtual file system in Go executables.
+
+Options:
+	-src folder[,file,file2]
+		The input files and directories, "public" by default.
+	-o
+		Name of the generated file, follows input by default.
+	-var=br
+		Name of the exposed variable, "br" by default.
+	-include *.html,*.css
+		Wildcard for the files to include, no default.
+	-exclude *.wasm
+		Wildcard for the files to exclude, no default.
+	-opt
+		Optional decompression: if enabled, files will only be decompressed
+		on the first time they are read.
+	-gitignore
+		Enables .gitignore rules parsing in each directory, disabled by default.
+	-quality [level]
+		Brotli compression level (0-11), the highest by default.
+
+Generate a broccoli.gen.go file with the variable broccoli:
+	//go:generate broccoli -src assets -o broccoli -var broccoli
+
+Generate a regular public.gen.go file, but include all *.wasm files:
+	//go:generate broccoli -src public -include="*.wasm"
+```
 
 ### Credits
 License: [MIT](https://vcs.aletheia.icu/lads/broccoli/src/branch/master/LICENSE)
