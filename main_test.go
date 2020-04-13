@@ -16,6 +16,18 @@ import (
 	"aletheia.icu/broccoli/fs"
 )
 
+var (
+	bundle, _ = defaultGenerator().generate()
+	br        = fs.New(false, bundle)
+)
+
+func defaultGenerator() *Generator {
+	return &Generator{
+		inputFiles: []string{"testdata"},
+		quality:    11,
+	}
+}
+
 func TestBroccoli(t *testing.T) {
 	var (
 		realPaths    []string
@@ -53,7 +65,7 @@ func TestBroccoli(t *testing.T) {
 }
 
 func TestGenerate(t *testing.T) {
-	walk := func(g Generator, walkFn filepath.WalkFunc) {
+	walk := func(g *Generator, walkFn filepath.WalkFunc) {
 		bundle, err := g.generate()
 		if err != nil {
 			t.Fatal(err)
@@ -61,13 +73,6 @@ func TestGenerate(t *testing.T) {
 
 		br := fs.New(false, bundle)
 		br.Walk("testdata", walkFn)
-	}
-
-	generator := func() Generator {
-		return Generator{
-			inputFiles: []string{"testdata"},
-			quality:    11,
-		}
 	}
 
 	var (
@@ -81,7 +86,7 @@ func TestGenerate(t *testing.T) {
 		return nil
 	})
 
-	g := generator()
+	g := defaultGenerator()
 	walk(g, func(path string, _ os.FileInfo, _ error) error {
 		virtualPaths = append(virtualPaths, path)
 		return nil
@@ -90,7 +95,7 @@ func TestGenerate(t *testing.T) {
 	// to be sure that generator without side-effects gives exactly the same file structure
 	assert.Equal(t, realPaths, virtualPaths, "paths asymmetric")
 
-	g = generator()
+	g = defaultGenerator()
 	g.includeGlob = "*.html"
 	walk(g, func(path string, info os.FileInfo, _ error) error {
 		if !info.IsDir() && filepath.Ext(path) != ".html" {
@@ -99,7 +104,7 @@ func TestGenerate(t *testing.T) {
 		return nil
 	})
 
-	g = generator()
+	g = defaultGenerator()
 	g.excludeGlob = "*.html"
 	walk(g, func(path string, info os.FileInfo, _ error) error {
 		if !info.IsDir() && filepath.Ext(path) == ".html" {
@@ -108,7 +113,7 @@ func TestGenerate(t *testing.T) {
 		return nil
 	})
 
-	g = generator()
+	g = defaultGenerator()
 	g.useGitignore = true
 	walk(g, func(path string, info os.FileInfo, _ error) error {
 		// following .gitignore rules
@@ -126,18 +131,6 @@ func TestGenerate(t *testing.T) {
 func TestFile(t *testing.T) {
 	_, err := fs.NewFile("bad")
 	assert.Error(t, err)
-
-	g := Generator{
-		inputFiles: []string{"testdata"},
-		quality:    11,
-	}
-
-	bundle, err := g.generate()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	br := fs.New(false, bundle)
 
 	f, err := br.Open("testdata/index.html")
 	assert.NoError(t, err)
@@ -188,7 +181,6 @@ func TestFileReaddir(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	br := fs.New(false, bundle)
 
 	dir, err := br.Open("testdata/readdir")
@@ -228,28 +220,17 @@ func TestFileSeek(t *testing.T) {
 }
 
 func TestHttpFileServer(t *testing.T) {
-	g := Generator{
-		inputFiles: []string{"testdata/readdir"},
-		quality:    11,
-	}
-
-	bundle, err := g.generate()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	br := fs.New(false, bundle)
 	srv := httptest.NewServer(http.FileServer(br))
 	defer srv.Close()
 
-	resp, err := srv.Client().Get(srv.URL + "/testdata/html/goDraw.html")
+	resp, err := srv.Client().Get(srv.URL + "/testdata/index.html")
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	assert.NoError(t, err)
 
-	orig, err := ioutil.ReadFile("testdata/html/goDraw.html")
+	orig, err := ioutil.ReadFile("testdata/index.html")
 	assert.NoError(t, err)
 
 	assert.Equal(t, data, orig)
