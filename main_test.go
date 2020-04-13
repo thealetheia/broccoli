@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -117,4 +120,82 @@ func TestGenerate(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+func TestFileReaddir(t *testing.T) {
+	g := Generator{
+		inputFiles: []string{"testdata/readdir"},
+		quality:    11,
+	}
+
+	bundle, err := g.generate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	br := fs.New(false, bundle)
+
+	dir, err := br.Open("testdata/readdir")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	infos, err := dir.Readdir(-1)
+	assert.NoError(t, err)
+	assert.Len(t, infos, 3)
+
+	infos, err = dir.Readdir(0)
+	assert.NoError(t, err)
+	assert.Len(t, infos, 3)
+
+	infos, err = dir.Readdir(1)
+	assert.NoError(t, err)
+	assert.Len(t, infos, 1)
+	assert.Equal(t, "1.txt", infos[0].Name())
+
+	infos, err = dir.Readdir(1)
+	assert.NoError(t, err)
+	assert.Len(t, infos, 1)
+	assert.Equal(t, "2.txt", infos[0].Name())
+
+	infos, err = dir.Readdir(1)
+	assert.NoError(t, err)
+	assert.Len(t, infos, 1)
+	assert.Equal(t, "3.txt", infos[0].Name())
+
+	_, err = dir.Readdir(1)
+	assert.Error(t, err)
+}
+
+func TestFileSeek(t *testing.T) {
+	// TODO
+}
+
+func TestHttpFileServer(t *testing.T) {
+	g := Generator{
+		inputFiles: []string{"testdata/readdir"},
+		quality:    11,
+	}
+
+	bundle, err := g.generate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	br := fs.New(false, bundle)
+	srv := httptest.NewServer(http.FileServer(br))
+	defer srv.Close()
+
+	resp, err := srv.Client().Get(srv.URL + "/testdata/html/goDraw.html")
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	orig, err := ioutil.ReadFile("testdata/html/goDraw.html")
+	assert.NoError(t, err)
+
+	assert.Equal(t, data, orig)
+	t.Log(string(data))
 }
