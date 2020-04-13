@@ -1,5 +1,3 @@
-Note: this repository is a [mirror](https://vcs.aletheia.icu/lads/broccoli).
-
 # 🥦 Broccoli
 > `go get -u aletheia.icu/broccoli`
 
@@ -99,7 +97,6 @@ Generate a regular public.gen.go file, but include all *.wasm files:
 License: [MIT](https://vcs.aletheia.icu/lads/broccoli/src/branch/master/LICENSE)
 
 We would like to thank brotli development team from Google and Andy Balholm, for
-his c2go pure-Go port of the library.
-
-Broccoli is an effort of a mentoring experiment, lead by [@tucnak](https://github.com/tucnak)
-on the foundation of [Aletheia](https://aletheia.icu).
+his c2go pure-Go port of the library. Broccoli itself is an effort of a mentoring
+experiment, lead by [@tucnak](https://github.com/tucnak) on the foundation of
+[Aletheia](https://aletheia.icu).
