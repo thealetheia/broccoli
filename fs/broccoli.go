@@ -73,5 +73,9 @@ func normalize(path string) string {
 		return path[2:]
 	}
 
+	if strings.HasPrefix(path, "/") {
+		return path[1:]
+	}
+
 	return path
 }

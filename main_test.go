@@ -248,7 +248,7 @@ func TestFileSeek(t *testing.T) {
 
 func TestFileReaddir(t *testing.T) {
 	g := Generator{
-		inputFiles: []string{"testdata/readdir"},
+		inputFiles: []string{"testdata"},
 		quality:    11,
 	}
 
@@ -303,6 +303,8 @@ func TestHttpFileServer(t *testing.T) {
 	resp, err := srv.Client().Get(srv.URL + "/testdata/index.html")
 	assert.NoError(t, err)
 	defer resp.Body.Close()
+
+	t.Log("request url", srv.URL + "/testdata/html/goDraw.html")
 
 	data, err := ioutil.ReadAll(resp.Body)
 	assert.NoError(t, err)

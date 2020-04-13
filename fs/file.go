@@ -2,6 +2,7 @@ package fs
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -36,6 +37,7 @@ type File struct {
 
 	buffer *bytes.Buffer
 	br     *Broccoli
+	rdi int // read dir index
 }
 
 // Stat returns a FileInfo describing this file.
@@ -89,6 +91,7 @@ func (f *File) Open() error {
 	}
 
 	f.buffer = bytes.NewBuffer(f.Data)
+	f.rdi = 0
 	return nil
 }
 
@@ -219,27 +222,45 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 		return nil, os.ErrInvalid
 	}
 
+	if f.rdi < 0 {
+		return nil, io.ErrUnexpectedEOF
+	}
+
+	br := f.br
 	if count < 0 {
 		count = 0
 	}
 
 	files := make([]os.FileInfo, 0, count)
-	for i := sort.SearchStrings(f.br.filePaths, f.Fpath) + 1; ; i++ {
-		g := f.br.files[f.br.filePaths[i]]
+	firstId := sort.SearchStrings(br.filePaths, f.Fpath) + 1
+
+	var eof error
+	for i := firstId+f.rdi; i < len(br.files); i++ {
+		g := br.files[br.filePaths[i]]
 		if !strings.HasPrefix(g.Fpath, f.Fpath) {
+			eof = io.EOF
 			break
 		}
 
 		files = append(files, g)
-		if count == 0 && len(files) == len(f.br.files)-1 {
-			break
-		}
+		f.rdi++
+
 		if count != 0 && len(files) == count {
 			break
 		}
 	}
 
-	return files, nil
+	if eof == io.EOF || firstId+f.rdi == len(br.files) {
+		f.rdi = 0
+
+		if count == 0 {
+			eof = nil
+		} else {
+			f.rdi = -1
+		}
+	}
+
+	return files, eof
 }
 
 // Sys is a mystery and always returns nil.
