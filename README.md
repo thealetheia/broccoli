@@ -19,6 +19,7 @@ files are decompressed only when they are read the first time.
 - 📰 There is `-gitignore` option to ignore files, already ignored by your
 existing .gitignore files.
 
+### Performance
 Admittedly, there are already many packages providing similar functionality out
 there in the wild. Tim Shannon did an overall pretty good overview of them in
 [Choosing A Library to Embed Static Assets in Go](https://tech.townsourced.com/post/embedding-static-files-in-go/),
@@ -50,6 +51,18 @@ config file                           | yes                 | no
 update files remotely                 | yes                 | no
 .gitignore support                    | no                  | yes
 
-#### How does it compare to other packages?
+#### How does it compare to others?
+![](https://imgur.com/htWU9Zz.png)
+Broccoli seems to outperform the existing solutions.
 
-Broccoli is supposed to be used with [go generate](https://blog.golang.org/generate).
+We did [benchmarks](https://vcs.aletheia.icu/lads/broccoli-bench), please feel
+free to review them and correct us whenever our methodology could be flawed.
+
+### Credits
+License: [MIT](https://vcs.aletheia.icu/lads/broccoli/src/branch/master/LICENSE)
+
+We would like to thank brotli development team from Google and Andy Balholm, for
+his c2go pure-Go port of the library.
+
+Broccoli is an effort of a mentoring experiment, lead by [@tucnak](https://github.com/tucnak)
+on the foundation of [Aletheia](https://aletheia.icu).
