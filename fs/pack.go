@@ -3,10 +3,11 @@ package fs
 import (
 	"bytes"
 	"encoding/gob"
+	"runtime"
 	"sort"
 
-	"github.com/andybalholm/brotli"
 	"github.com/pkg/errors"
+	"github.com/andybalholm/brotli"
 )
 
 // Pack compresses a set of files from disk for bundled use in the generated code.
@@ -17,17 +18,45 @@ func Pack(files []*File, quality int) ([]byte, error) {
 		return files[i].Fpath < files[j].Fpath
 	})
 
+	n := runtime.NumCPU()
+	feed := make(chan *File)
+	errs := make(chan error, n)
+	defer close(errs)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			for f := range feed {
+				data, err := f.compress(quality)
+				if err != nil {
+					errs <- err
+					return
+				}
+
+				f.Data = data
+			}
+
+			errs <- nil
+		}()
+	}
+
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
 
-		data, err := file.compress(quality)
+		feed <- file
+	}
+	close(feed)
+
+	for err := range errs {
 		if err != nil {
 			return nil, err
 		}
 
-		file.Data = data
+		n--
+		if n == 0 {
+			break
+		}
 	}
 
 	var b bytes.Buffer
@@ -64,14 +93,41 @@ func New(opt bool, bundle []byte) *Broccoli {
 		f.compressed = true
 		f.br = br
 
-		if !opt {
-			if err := f.decompress(f.Data); err != nil {
-				panic(errors.Wrap(err, "could not decompress"))
-			}
-		}
-
 		br.files[f.Fpath] = f
 		br.filePaths = append(br.filePaths, f.Fpath)
+	}
+
+	if opt {
+		return br
+	}
+
+	n := runtime.NumCPU()
+	feed := make(chan *File)
+	done := make(chan struct{}, n)
+	defer close(done)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			for f := range feed {
+				if err := f.decompress(f.Data); err != nil {
+					panic(errors.Wrap(err, "could not decompress"))
+				}
+			}
+
+			done <- struct{}{}
+		}()
+	}
+
+	for _, file := range files {
+		feed <- file
+	}
+	close(feed)
+
+	for range done {
+		n--
+		if n == 0 {
+			break
+		}
 	}
 
 	return br

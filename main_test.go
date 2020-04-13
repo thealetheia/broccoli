@@ -50,10 +50,12 @@ func TestBroccoli(t *testing.T) {
 		return nil
 	})
 
+	start := time.Now()
 	bundle, err := fs.Pack(files, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
+	elapsed := time.Since(start)
 
 	br := fs.New(false, bundle)
 	br.Walk("./testdata", func(path string, _ os.FileInfo, _ error) error {
@@ -62,6 +64,8 @@ func TestBroccoli(t *testing.T) {
 	})
 
 	assert.Equal(t, realPaths, virtualPaths, "paths asymmetric")
+
+	fmt.Println("testdata: elapsed time", elapsed)
 	fmt.Printf("testdata: compression factor %.2fx\n", totalSize/float64(len(bundle)))
 
 	br = fs.New(true, bundle)
@@ -303,8 +307,6 @@ func TestHttpFileServer(t *testing.T) {
 	resp, err := srv.Client().Get(srv.URL + "/testdata/index.html")
 	assert.NoError(t, err)
 	defer resp.Body.Close()
-
-	t.Log("request url", srv.URL + "/testdata/html/goDraw.html")
 
 	data, err := ioutil.ReadAll(resp.Body)
 	assert.NoError(t, err)
