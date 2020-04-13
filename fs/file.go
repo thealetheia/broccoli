@@ -82,10 +82,6 @@ func NewFile(path string) (*File, error) {
 // Open opens the file for reading. If successful, methods on
 // the returned file can be used for reading.
 func (f *File) Open() error {
-	if f.IsDir() {
-		return os.ErrPermission
-	}
-
 	if f.compressed {
 		if err := f.decompress(f.Data); err != nil {
 			return errors.Wrap(err, "could not decompress")
@@ -235,6 +231,9 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 		}
 
 		files = append(files, g)
+		if count == 0 && len(files) == len(f.br.files)-1 {
+			break
+		}
 		if count != 0 && len(files) == count {
 			break
 		}
