@@ -1,10 +1,12 @@
+Note: this repository is a [mirror](https://vcs.aletheia.icu/lads/broccoli).
+
 # Broccoli
 > `go get -u aletheia.icu/broccoli`
 
 [![GoDoc](https://godoc.org/aletheia.icu/broccoli/fs?status.svg)](https://godoc.org/aletheia.icu/broccoli/fs)
 [![Go Report Card](https://goreportcard.com/badge/aletheia.icu/broccoli/fs)](https://goreportcard.com/report/aletheia.icu/broccoli/fs)
 
-Broccoli uses [brotli](https://github.com/google/brotli) compression to embed a 
+Broccoli uses [brotli](https://github.com/google/brotli) compression to embed a
 virtual file system of static files inside Go executables.
 
 A few reasons to pick broccoli over the alternatives:
