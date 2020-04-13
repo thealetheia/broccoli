@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -62,6 +63,10 @@ func TestBroccoli(t *testing.T) {
 
 	assert.Equal(t, realPaths, virtualPaths, "paths asymmetric")
 	fmt.Printf("testdata: compression factor %.2fx\n", totalSize/float64(len(bundle)))
+
+	br = fs.New(true, bundle)
+	_, err = br.Open("testdata/index.html")
+	assert.NoError(t, err)
 }
 
 func TestGenerate(t *testing.T) {
@@ -159,8 +164,9 @@ func TestFile(t *testing.T) {
 	assert.Nil(t, f.(*fs.File).Sys())
 
 	assert.NoError(t, f.(*fs.File).Open())
-	_, err = f.Read(make([]byte, 0, 32))
+	n, err := f.Read(make([]byte, 1))
 	assert.NoError(t, err)
+	assert.Equal(t, 1, n)
 
 	dir, err := br.Open("testdata/html")
 	assert.NoError(t, err)
@@ -169,6 +175,75 @@ func TestFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, os.ModeDir, dir.(*fs.File).Mode())
 	assert.Equal(t, info.ModTime().Truncate(time.Second), dir.(*fs.File).ModTime())
+}
+
+func TestFileSeek(t *testing.T) {
+	f, err := br.Open("testdata/index.html")
+	assert.NoError(t, err)
+
+	assert.NoError(t, f.Close())
+	_, err = f.Seek(0, 0)
+	assert.Equal(t, os.ErrClosed, err)
+	assert.NoError(t, f.(*fs.File).Open())
+
+	_, err = f.Seek(0, -1)
+	assert.EqualError(t, err, "Seek: bad whence")
+
+	var (
+		data   = f.(*fs.File).Data
+		size   = int64(len(data))
+		offset int64
+	)
+	const chunkSize = 32
+
+	t.Run("Seek(whence=io.SeekStart)", func(t *testing.T) {
+		offset++
+
+		_, err := f.Seek(size+1, io.SeekStart)
+		assert.EqualError(t, err, "Seek: bad offset")
+
+		n, err := f.Seek(1, io.SeekStart)
+		assert.NoError(t, err)
+		assert.Equal(t, offset, n)
+
+		b := make([]byte, chunkSize)
+		_, err = f.Read(b)
+		assert.Equal(t, data[offset:offset+chunkSize], b)
+
+		offset += chunkSize
+	})
+
+	t.Run("Seek(whence=io.SeekCurrent)", func(t *testing.T) {
+		offset++
+
+		_, err := f.Seek(size+1, io.SeekCurrent)
+		assert.EqualError(t, err, "Seek: bad offset")
+
+		n, err := f.Seek(1, io.SeekCurrent)
+		assert.NoError(t, err)
+		assert.Equal(t, offset, n)
+
+		b := make([]byte, chunkSize)
+		_, err = f.Read(b)
+		assert.Equal(t, data[offset:offset+chunkSize], b)
+
+		offset += chunkSize
+	})
+
+	t.Run("Seek(whence=io.SeekEnd)", func(t *testing.T) {
+		offset = size - chunkSize
+
+		_, err := f.Seek(size+1, io.SeekEnd)
+		assert.EqualError(t, err, "Seek: bad offset")
+
+		n, err := f.Seek(chunkSize, io.SeekEnd)
+		assert.NoError(t, err)
+		assert.Equal(t, offset, n)
+
+		b := make([]byte, chunkSize)
+		_, err = f.Read(b)
+		assert.Equal(t, data[offset:], b)
+	})
 }
 
 func TestFileReaddir(t *testing.T) {
@@ -188,35 +263,37 @@ func TestFileReaddir(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	infos, err := dir.Readdir(-1)
-	assert.NoError(t, err)
-	assert.Len(t, infos, 3)
+	t.Run("Readdir(count=-1)", func(t *testing.T) {
+		infos, err := dir.Readdir(-1)
+		assert.NoError(t, err)
+		assert.Len(t, infos, 3)
+	})
 
-	infos, err = dir.Readdir(0)
-	assert.NoError(t, err)
-	assert.Len(t, infos, 3)
+	t.Run("Readdir(count=0)", func(t *testing.T) {
+		infos, err := dir.Readdir(0)
+		assert.NoError(t, err)
+		assert.Len(t, infos, 3)
+	})
 
-	infos, err = dir.Readdir(1)
-	assert.NoError(t, err)
-	assert.Len(t, infos, 1)
-	assert.Equal(t, "1.txt", infos[0].Name())
+	t.Run("Readdir(count>0)", func(t *testing.T) {
+		infos, err := dir.Readdir(1)
+		assert.NoError(t, err)
+		assert.Len(t, infos, 1)
+		assert.Equal(t, "1.txt", infos[0].Name())
 
-	infos, err = dir.Readdir(1)
-	assert.NoError(t, err)
-	assert.Len(t, infos, 1)
-	assert.Equal(t, "2.txt", infos[0].Name())
+		infos, err = dir.Readdir(1)
+		assert.NoError(t, err)
+		assert.Len(t, infos, 1)
+		assert.Equal(t, "2.txt", infos[0].Name())
 
-	infos, err = dir.Readdir(1)
-	assert.NoError(t, err)
-	assert.Len(t, infos, 1)
-	assert.Equal(t, "3.txt", infos[0].Name())
+		infos, err = dir.Readdir(1)
+		assert.NoError(t, err)
+		assert.Len(t, infos, 1)
+		assert.Equal(t, "3.txt", infos[0].Name())
 
-	_, err = dir.Readdir(1)
-	assert.Error(t, err)
-}
-
-func TestFileSeek(t *testing.T) {
-	// TODO
+		_, err = dir.Readdir(1)
+		assert.Error(t, err)
+	})
 }
 
 func TestHttpFileServer(t *testing.T) {
