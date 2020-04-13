@@ -1,3 +1,4 @@
-# exclude *.html and *.js files
+# exclude unnecessary files
 *.html
 *.js
+*.txt
