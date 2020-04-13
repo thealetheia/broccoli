@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"sort"
 
-	"github.com/pkg/errors"
 	"github.com/andybalholm/brotli"
+	"github.com/pkg/errors"
 )
 
 // Pack compresses a set of files from disk for bundled use in the generated code.

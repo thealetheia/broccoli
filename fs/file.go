@@ -37,7 +37,7 @@ type File struct {
 
 	buffer *bytes.Buffer
 	br     *Broccoli
-	rdi int // read dir index
+	rdi    int // read dir index
 }
 
 // Stat returns a FileInfo describing this file.
@@ -235,7 +235,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	firstId := sort.SearchStrings(br.filePaths, f.Fpath) + 1
 
 	var eof error
-	for i := firstId+f.rdi; i < len(br.files); i++ {
+	for i := firstId + f.rdi; i < len(br.files); i++ {
 		g := br.files[br.filePaths[i]]
 		if !strings.HasPrefix(g.Fpath, f.Fpath) {
 			eof = io.EOF

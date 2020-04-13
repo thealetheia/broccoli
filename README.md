@@ -15,8 +15,8 @@ A few reasons to pick broccoli over the alternatives:
 compression algorithm, [brotli](https://github.com/google/brotli).
 - 💾 Broccoli supports bundling of multiple source directories, only relies on
 `go generate` command-line interface and doesn't require configuration files.
-- 🔑 Optional decompression is something you may want to you; when it's enabled,
-files are decompressed only when they are read the first time.
+- 🔑 Optional decompression is something you may want; when it's enabled, files
+are decompressed only when they are read the first time.
 - 🚙 You might want to target `wasm/js` architecture.
 - 📰 There is `-gitignore` option to ignore files, already ignored by your
 existing .gitignore files.
