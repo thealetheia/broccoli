@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -67,6 +68,20 @@ func TestBroccoli(t *testing.T) {
 
 	fmt.Println("testdata: elapsed time", elapsed)
 	fmt.Printf("testdata: compression factor %.2fx\n", totalSize/float64(len(bundle)))
+
+	_, err = br.Open("bad")
+	assert.Equal(t, os.ErrNotExist, err)
+	_, err = br.Stat("bad")
+	assert.Equal(t, os.ErrNotExist, err)
+
+	assert.Panics(t, func() {
+		_ = fs.New(false, nil)
+	}, "New must panic with empty bundle")
+
+	err = br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+		return errors.New("walk error")
+	})
+	assert.EqualError(t, err, "walk error")
 
 	br = fs.New(true, bundle)
 	_, err = br.Open("testdata/index.html")
@@ -298,6 +313,11 @@ func TestFileReaddir(t *testing.T) {
 		_, err = dir.Readdir(1)
 		assert.Error(t, err)
 	})
+
+	dir, _ = br.Open("testdata/readdir")
+	dir.(*fs.File).Fpath = "bad"
+	_, err = dir.Readdir(1)
+	assert.Equal(t, io.EOF, err)
 }
 
 func TestHttpFileServer(t *testing.T) {
