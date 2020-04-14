@@ -1,6 +1,6 @@
 module aletheia.icu/broccoli
 
-go 1.13
+go 1.12
 
 require (
 	aletheia.icu/broccoli/fs v0.0.0-20200413175010-8ccec07525d1

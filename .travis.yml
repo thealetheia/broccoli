@@ -1,5 +1,8 @@
 language: go
 
+go:
+  - 1.12.x
+
 before_install:
   - go get -t -v ./...
 
