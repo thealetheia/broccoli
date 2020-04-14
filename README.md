@@ -54,7 +54,7 @@ update files remotely                 | yes                 | no
 .gitignore support                    | no                  | yes
 
 #### How does it compare to others?
-![](https://imgur.com/htWU9Zz.png)
+![](https://i.imgur.com/N4BG8jr.png)
 Broccoli seems to outperform the existing solutions.
 
 We did [benchmarks](https://vcs.aletheia.icu/lads/broccoli-bench), please feel
@@ -91,6 +91,22 @@ Generate a broccoli.gen.go file with the variable broccoli:
 
 Generate a regular public.gen.go file, but include all *.wasm files:
 	//go:generate broccoli -src public -include="*.wasm"
+```
+
+How broccoli is used in the user code:
+```go
+//go:generate broccoli -src=testdata,others -o assets
+func init() {
+    br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+        // walk...
+        return nil
+    }
+}
+
+func main() {
+    server := http.FileServer(br)
+    http.ListenAndServe(":8080", server)))
+}
 ```
 
 ### Credits

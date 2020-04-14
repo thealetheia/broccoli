@@ -49,7 +49,7 @@ Options:
 	-gitignore
 		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
-		Brotli compression level (0-11), the highest by default.
+		Brotli compression level (1-11), the highest by default.
 
 Generate a broccoli.gen.go file with the variable broccoli:
 	//go:generate broccoli -src assets -o broccoli -var broccoli
