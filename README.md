@@ -54,7 +54,8 @@ update files remotely                 | yes                 | no
 .gitignore support                    | no                  | yes
 
 #### How does it compare to others?
-![](https://i.imgur.com/N4BG8jr.png)
+![](https://i.imgur.com/vB9Miae.png)
+
 Broccoli seems to outperform the existing solutions.
 
 We did [benchmarks](https://vcs.aletheia.icu/lads/broccoli-bench), please feel
