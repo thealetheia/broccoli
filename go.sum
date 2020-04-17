@@ -1,5 +1,5 @@
-aletheia.icu/broccoli/fs v0.0.0-20200414104128-7b0fd0de8ebf h1:J26qKpLs0bTMu8/4hOeRlopRuHKybJIPZoA61ktUOqA=
-aletheia.icu/broccoli/fs v0.0.0-20200414104128-7b0fd0de8ebf/go.mod h1:62pufqcyJVU55Qd5VtXz24d/P+VCFWc18FAbHnyrT+s=
+aletheia.icu/broccoli/fs v0.0.0-20200417133515-96f8feb4daae h1:Q2b2fg3XOKo//51TXHmaE95EfxJtgsX3PKbuxhDP3BM=
+aletheia.icu/broccoli/fs v0.0.0-20200417133515-96f8feb4daae/go.mod h1:62pufqcyJVU55Qd5VtXz24d/P+VCFWc18FAbHnyrT+s=
 github.com/andybalholm/brotli v1.0.0 h1:7UCwP93aiSfvWpapti8g88vVVGp2qqtGyePsSuDafo4=
 github.com/andybalholm/brotli v1.0.0/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
