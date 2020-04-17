@@ -81,7 +81,7 @@ func main() {
 
 	output := *flagOutput
 	if output == "" {
-		output = inputs[0]
+		output = strings.TrimLeft(inputs[0], "../")
 	}
 	if !strings.HasSuffix(output, ".gen.go") {
 		output = strings.Split(output, ".")[0] + ".gen.go"
