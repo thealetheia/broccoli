@@ -66,6 +66,9 @@ func NewFile(path string) (*File, error) {
 	if runtime.GOOS == "windows" {
 		path = strings.ReplaceAll(path, `\`, "/")
 	}
+	if strings.HasPrefix(path, "../") {
+		path = strings.TrimLeft(path, "../")
+	}
 
 	time := fileInfo.ModTime().Unix()
 	if fileInfo.IsDir() {
