@@ -98,15 +98,15 @@ How broccoli is used in the user code:
 ```go
 //go:generate broccoli -src=testdata,others -o assets
 func init() {
-	br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
-		// walk...
-		return nil
-	})
+    br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+        // walk...
+        return nil
+    })
 }
 
 func main() {
-	server := http.FileServer(br)
-	http.ListenAndServe(":8080", server)
+    server := http.FileServer(br)
+    http.ListenAndServe(":8080", server)
 }
 ```
 
