@@ -149,8 +149,11 @@ type includeWildcard struct {
 }
 
 func (w includeWildcard) test(info os.FileInfo) bool {
-	pass := !w.include
+	if info.IsDir() {
+		return true
+	}
 
+	pass := !w.include
 	for _, pattern := range w.patterns {
 		match, err := filepath.Match(pattern, info.Name())
 		if err != nil {
