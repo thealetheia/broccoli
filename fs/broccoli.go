@@ -2,7 +2,6 @@
 package fs
 
 import (
-	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -23,7 +22,7 @@ type Broccoli struct {
 
 // Open opens the named file for reading. If successful, methods on
 // the returned file can be used for reading.
-func (br *Broccoli) Open(filepath string) (http.File, error) {
+func (br *Broccoli) Open(filepath string) (*File, error) {
 	filepath = normalize(filepath)
 
 	if file, ok := br.files[filepath]; ok {
@@ -75,6 +74,9 @@ func normalize(path string) string {
 
 	if strings.HasPrefix(path, "/") {
 		return path[1:]
+	}
+	if strings.HasSuffix(path, "/") {
+		return path[:len(path)-1]
 	}
 
 	return path
