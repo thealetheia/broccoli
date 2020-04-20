@@ -96,17 +96,17 @@ Generate a regular public.gen.go file, but include all *.wasm files:
 
 How broccoli is used in the user code:
 ```go
-//go:generate broccoli -src=testdata,others -o assets
+//go:generate broccoli -src=public,others -o assets
+
 func init() {
-    br.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+    br.Walk("public", func(path string, info os.FileInfo, err error) error {
         // walk...
         return nil
     })
 }
 
 func main() {
-    server := http.FileServer(br)
-    http.ListenAndServe(":8080", server)
+    http.ListenAndServe(":8080", br.Serve("public"))
 }
 ```
 
