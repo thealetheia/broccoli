@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -158,13 +157,11 @@ func TestFile(t *testing.T) {
 
 	f, err := br.Open("testdata/index.html")
 	assert.NoError(t, err)
-	_, ok := f.(*fs.File)
-	assert.True(t, ok)
 
 	info, err := os.Stat("testdata/index.html")
 	assert.NoError(t, err)
-	assert.Equal(t, os.FileMode(0444), f.(*fs.File).Mode()) // const for files
-	assert.Equal(t, info.ModTime().Truncate(time.Second), f.(*fs.File).ModTime())
+	assert.Equal(t, os.FileMode(0444), f.Mode()) // const for files
+	assert.Equal(t, info.ModTime().Truncate(time.Second), f.ModTime())
 
 	stat, err := f.Stat()
 	assert.NoError(t, err)
@@ -177,12 +174,12 @@ func TestFile(t *testing.T) {
 	assert.Error(t, os.ErrInvalid, err)
 	assert.Equal(t, os.ErrClosed, f.Close())
 
-	assert.Equal(t, "index.html", f.(*fs.File).Name())
-	assert.Equal(t, info.Size(), f.(*fs.File).Size())
-	assert.False(t, f.(*fs.File).IsDir())
-	assert.Nil(t, f.(*fs.File).Sys())
+	assert.Equal(t, "index.html", f.Name())
+	assert.Equal(t, info.Size(), f.Size())
+	assert.False(t, f.IsDir())
+	assert.Nil(t, f.Sys())
 
-	assert.NoError(t, f.(*fs.File).Open())
+	assert.NoError(t, f.Open())
 	n, err := f.Read(make([]byte, 1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, n)
@@ -192,8 +189,8 @@ func TestFile(t *testing.T) {
 
 	info, err = os.Stat("testdata/html")
 	assert.NoError(t, err)
-	assert.Equal(t, os.ModeDir, dir.(*fs.File).Mode())
-	assert.Equal(t, info.ModTime().Truncate(time.Second), dir.(*fs.File).ModTime())
+	assert.Equal(t, os.ModeDir, dir.Mode())
+	assert.Equal(t, info.ModTime().Truncate(time.Second), dir.ModTime())
 }
 
 func TestFileSeek(t *testing.T) {
@@ -203,13 +200,13 @@ func TestFileSeek(t *testing.T) {
 	assert.NoError(t, f.Close())
 	_, err = f.Seek(0, 0)
 	assert.Equal(t, os.ErrClosed, err)
-	assert.NoError(t, f.(*fs.File).Open())
+	assert.NoError(t, f.Open())
 
 	_, err = f.Seek(0, -1)
 	assert.EqualError(t, err, "Seek: bad whence")
 
 	var (
-		data   = f.(*fs.File).Data
+		data   = f.Data
 		size   = int64(len(data))
 		offset int64
 	)
@@ -315,16 +312,16 @@ func TestFileReaddir(t *testing.T) {
 	})
 
 	dir, _ = br.Open("testdata/readdir")
-	dir.(*fs.File).Fpath = "bad"
+	dir.Fpath = "bad"
 	_, err = dir.Readdir(1)
 	assert.Equal(t, io.EOF, err)
 }
 
 func TestHttpFileServer(t *testing.T) {
-	srv := httptest.NewServer(http.FileServer(br))
+	srv := httptest.NewServer(br.Serve("testdata"))
 	defer srv.Close()
 
-	resp, err := srv.Client().Get(srv.URL + "/testdata/index.html")
+	resp, err := srv.Client().Get(srv.URL + "/index.html")
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 
