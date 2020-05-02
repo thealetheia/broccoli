@@ -8,13 +8,14 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"aletheia.icu/broccoli/fs"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -149,6 +150,32 @@ func TestGenerate(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+func TestGenerateStripPath(t *testing.T) {
+	realPaths := []string{}
+	virtualPaths := []string{}
+	filepath.Walk("testdata", func(path string, info os.FileInfo, _ error) error {
+		path = strings.TrimPrefix(strings.ReplaceAll(path, `\`, "/"), "testdata")
+		if len(path) > 0 && path[0] == '/' {
+			path = path[1:]
+		}
+		realPaths = append(realPaths, path)
+		return nil
+	})
+
+	g := defaultGenerator()
+	g.stripPrefix = "testdata"
+	bundle, err := g.generate()
+	assert.NoError(t, err)
+	br := fs.New(false, bundle)
+	br.Walk("", func(path string, i os.FileInfo, _ error) error {
+		virtualPaths = append(virtualPaths, path)
+		return nil
+	})
+
+	sort.Strings(realPaths)
+	assert.Equal(t, realPaths, virtualPaths, "paths asymmetric with striped prefix")
 }
 
 func TestFile(t *testing.T) {

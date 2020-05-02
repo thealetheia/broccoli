@@ -12,14 +12,15 @@ import (
 )
 
 var (
-	flagInput     = flag.String("src", "public", "")
-	flagOutput    = flag.String("o", "", "")
-	flagVariable  = flag.String("var", "br", "")
-	flagInclude   = flag.String("include", "", "")
-	flagExclude   = flag.String("exclude", "", "")
-	flagOptional  = flag.Bool("opt", false, "")
-	flagGitignore = flag.Bool("gitignore", false, "")
-	flagQuality   = flag.Int("quality", 11, "")
+	flagInput       = flag.String("src", "public", "")
+	flagOutput      = flag.String("o", "", "")
+	flagVariable    = flag.String("var", "br", "")
+	flagInclude     = flag.String("include", "", "")
+	flagExclude     = flag.String("exclude", "", "")
+	flagOptional    = flag.Bool("opt", false, "")
+	flagGitignore   = flag.Bool("gitignore", false, "")
+	flagQuality     = flag.Int("quality", 11, "")
+	flagStripPrefix = flag.String("strip-prefix", "", "")
 
 	verbose = flag.Bool("v", false, "")
 )
@@ -50,6 +51,8 @@ Options:
 		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
 		Brotli compression level (1-11), the highest by default.
+	-strip-prefix [prefix]
+		Strip prefix for compressed files, without leading '../', no default.
 
 Generate a broccoli.gen.go file with the variable broccoli:
 	//go:generate broccoli -src assets -o broccoli -var broccoli
@@ -109,6 +112,7 @@ func main() {
 		excludeGlob:  excludeGlob,
 		useGitignore: *flagGitignore,
 		quality:      quality,
+		stripPrefix:  *flagStripPrefix,
 	}
 
 	g.parsePackage()

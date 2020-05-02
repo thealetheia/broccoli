@@ -86,6 +86,8 @@ Options:
 		Enables .gitignore rules parsing in each directory, disabled by default.
 	-quality [level]
 		Brotli compression level (1-11), the highest by default.
+	-strip-prefix public
+		Strip prefix for compressed files, without leading '../', no default.
 
 Generate a broccoli.gen.go file with the variable broccoli:
 	//go:generate broccoli -src assets -o broccoli -var broccoli
