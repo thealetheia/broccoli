@@ -2,6 +2,7 @@
 package fs
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -18,18 +19,24 @@ import (
 type Broccoli struct {
 	files     map[string]*File
 	filePaths []string
+
+	devMode bool
 }
 
 // Open opens the named file for reading. If successful, methods on
 // the returned file can be used for reading.
-func (br *Broccoli) Open(filepath string) (*File, error) {
-	filepath = normalize(filepath)
+func (br *Broccoli) Open(path string) (http.File, error) {
+	path = normalize(path)
 
-	if file, ok := br.files[filepath]; ok {
-		if err := file.Open(); err != nil {
+	if br.devMode {
+		return os.Open(path)
+	}
+
+	if f, ok := br.files[path]; ok {
+		if err := f.Open(); err != nil {
 			return nil, err
 		}
-		return file, nil
+		return f, nil
 	}
 
 	return nil, os.ErrNotExist
@@ -39,8 +46,17 @@ func (br *Broccoli) Open(filepath string) (*File, error) {
 func (br *Broccoli) Stat(path string) (os.FileInfo, error) {
 	path = normalize(path)
 
-	if file, ok := br.files[path]; ok {
-		return file, nil
+	if br.devMode {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+
+		return f.Stat()
+	}
+
+	if f, ok := br.files[path]; ok {
+		return f, nil
 	}
 
 	return nil, os.ErrNotExist
@@ -55,16 +71,35 @@ func (br *Broccoli) Stat(path string) (os.FileInfo, error) {
 func (br *Broccoli) Walk(root string, walkFn filepath.WalkFunc) error {
 	root = normalize(root)
 
+	if br.devMode {
+		return filepath.Walk(root, walkFn)
+	}
+
 	pos := sort.SearchStrings(br.filePaths, root)
 	for ; pos < len(br.filePaths) && strings.HasPrefix(br.filePaths[pos], root); pos++ {
-		file := br.files[br.filePaths[pos]]
-		err := walkFn(file.Fpath, file, nil)
+		f := br.files[br.filePaths[pos]]
+		err := walkFn(f.Fpath, f, nil)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// Development controls the development mode.
+//
+// If enabled, broccoli will use the local file system instead of
+// the bundled set of files. This can be useful when doing rapid
+// development cycles, when the local file system is available
+// or you momentarily don't care about the contents of the bundle.
+//
+// 	if os.Getenv("PRODUCTION") == "" {
+// 		br.Development(true)
+// 	}
+//
+func (br *Broccoli) Development(mode bool) {
+	br.devMode = mode
 }
 
 func normalize(path string) string {
