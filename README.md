@@ -35,7 +35,7 @@ the driving force behind the creation of broccoli.
 The most feature-complete library from the comparison table seems to be
 [fileb0x](https://github.com/UnnoTed/fileb0x).
 
-#### How does broccoli compare to flexb0x?
+#### How does broccoli compare to fileb0x?
 Feature                               | fileb0x             | broccoli
 ---------------------                 | -----------         | ------------------
 compression                           | gzip                | brotli (-20% avg.)
